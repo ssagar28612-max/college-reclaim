@@ -97,11 +97,22 @@ export const authOptions: NextAuthOptions = {
       return true
     },
     async redirect({ url, baseUrl }) {
+      // Get the actual base URL from environment or use the provided baseUrl
+      const actualBaseUrl = process.env.NEXTAUTH_URL || baseUrl
+      
       // Allows relative callback URLs
-      if (url.startsWith("/")) return `${baseUrl}${url}`
+      if (url.startsWith("/")) return `${actualBaseUrl}${url}`
+      
       // Allows callback URLs on the same origin
-      else if (new URL(url).origin === baseUrl) return url
-      return baseUrl
+      try {
+        const urlObj = new URL(url)
+        const baseUrlObj = new URL(actualBaseUrl)
+        if (urlObj.origin === baseUrlObj.origin) return url
+      } catch (e) {
+        // Invalid URL, return base
+      }
+      
+      return actualBaseUrl
     },
   },
   pages: {
