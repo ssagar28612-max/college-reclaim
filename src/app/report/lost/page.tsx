@@ -96,7 +96,7 @@ export default function ReportLost() {
     setIsSubmitting(true)
     
     try {
-      // Combine date and time
+      // Combine date and time with Z suffix for UTC timezone
       const dateTime = formData.dateLost + (formData.timeLost ? 'T' + formData.timeLost : 'T00:00:00') + 'Z'
       
       const response = await fetch('/api/lost-items', {
@@ -110,7 +110,6 @@ export default function ReportLost() {
           category: formData.category,
           location: formData.specificLocation || formData.location,
           dateLost: dateTime,
-          imageUrl: uploadedFiles.length > 0 ? URL.createObjectURL(uploadedFiles[0]) : undefined,
         }),
       })
 
@@ -304,9 +303,12 @@ export default function ReportLost() {
                         onChange={(e) => setFormData({...formData, description: e.target.value})}
                         rows={5}
                         className="resize-none"
+                        minLength={10}
                         required
                       />
-                      <p className="text-xs text-gray-500">{formData.description.length}/500 characters</p>
+                      <p className={`text-xs ${formData.description.length < 10 ? 'text-red-500' : 'text-gray-500'}`}>
+                        {formData.description.length}/500 characters (minimum 10 required)
+                      </p>
                     </div>
 
                     <div className="space-y-2">

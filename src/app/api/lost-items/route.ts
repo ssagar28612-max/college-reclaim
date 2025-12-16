@@ -87,6 +87,8 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
+    console.log('Received body:', JSON.stringify(body, null, 2))
+    
     const validatedData = lostItemSchema.parse(body)
 
     const lostItem = await prisma.lostItem.create({
@@ -123,6 +125,7 @@ export async function POST(req: NextRequest) {
 
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error('Validation error:', JSON.stringify(error.issues, null, 2))
       return NextResponse.json(
         { error: 'Validation failed', details: error.issues },
         { status: 400 }

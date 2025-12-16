@@ -16,122 +16,16 @@ import { BackButton } from "@/components/ui/back-button"
 import { ArrowLeft, Search as SearchIcon, Filter, MapPin, Calendar, User, Heart, Eye, ExternalLink, Sparkles } from "lucide-react"
 import { toast } from "sonner"
 
-// Enhanced mock data with more realistic details
-const mockItems = [
-  {
-    id: 1,
-    type: "lost",
-    title: "iPhone 14 Pro - Midnight Black",
-    description: "Black iPhone 14 Pro with MagSafe compatible purple case. Has a small scratch on the back camera. Contains important photos and contacts.",
-    category: "ELECTRONICS",
-    location: "Central Library - 3rd Floor Study Area",
-    date: "2025-09-25",
-    time: "14:30",
-    reporter: "John D.",
-    contact: "john.doe@university.edu",
-    status: "ACTIVE",
-    views: 47,
-    contactAttempts: 3,
-    reward: "$50",
-    images: ["phone1.jpg"],
-    verified: true
-  },
-  {
-    id: 2,
-    type: "found",
-    title: "Blue Jansport Backpack",
-    description: "Navy blue Jansport backpack with multiple compartments. Contains notebooks, pens, and a water bottle. Found with owner's initials 'S.M.' on the inside tag.",
-    category: "BAGS",
-    location: "Student Center - Main Entrance",
-    date: "2025-09-26",
-    time: "10:15",
-    reporter: "Sarah M.",
-    contact: "sarah.martinez@university.edu",
-    status: "ACTIVE",
-    views: 32,
-    contactAttempts: 1,
-    images: ["backpack1.jpg"],
-    verified: true
-  },
-  {
-    id: 3,
-    type: "lost",
-    title: "University Student ID Card",
-    description: "Student ID card with photo. Name: Alex Johnson, Student ID: STU2024789. Lost somewhere between the cafeteria and engineering building.",
-    category: "ID_CARD",
-    location: "Campus Cafeteria to Engineering Building",
-    date: "2025-09-27",
-    time: "12:45",
-    reporter: "Alex J.",
-    contact: "alex.johnson@university.edu",
-    status: "ACTIVE",
-    views: 28,
-    contactAttempts: 0,
-    urgent: true,
-    verified: true
-  },
-  {
-    id: 4,
-    type: "found",
-    title: "Apple AirPods Pro (2nd Gen)",
-    description: "White AirPods Pro with wireless charging case. Found in pristine condition in Room 205. Case shows 80% battery when checked.",
-    category: "ELECTRONICS",
-    location: "Engineering Building - Room 205",
-    date: "2025-09-24",
-    time: "16:20",
-    reporter: "Mike R.",
-    contact: "mike.rodriguez@university.edu",
-    status: "ACTIVE",
-    views: 65,
-    contactAttempts: 5,
-    images: ["airpods1.jpg"],
-    verified: true
-  },
-  {
-    id: 5,
-    type: "lost",
-    title: "MacBook Pro 13\" with Stickers",
-    description: "Silver MacBook Pro 13\" with programming stickers on the lid. Contains important coursework and projects. Reward offered for safe return.",
-    category: "ELECTRONICS", 
-    location: "Computer Science Building - Lab 101",
-    date: "2025-09-23",
-    time: "18:30",
-    reporter: "Emma K.",
-    contact: "emma.kim@university.edu",
-    status: "RESOLVED",
-    views: 89,
-    contactAttempts: 8,
-    reward: "$200",
-    images: ["laptop1.jpg"],
-    verified: true
-  },
-  {
-    id: 6,
-    type: "found",
-    title: "Silver Watch - Fossil Brand",
-    description: "Men's silver Fossil watch with leather strap. Has an engraving on the back that says 'Happy 21st Birthday - Love Mom & Dad'.",
-    category: "ACCESSORIES",
-    location: "Sports Complex - Locker Room",
-    date: "2025-09-26",
-    time: "07:45",
-    reporter: "David L.",
-    contact: "david.lee@university.edu",
-    status: "ACTIVE",
-    views: 41,
-    contactAttempts: 2,
-    images: ["watch1.jpg"],
-    verified: true
-  }
-]
-
 const categories = [
   { value: "ALL", label: "All Categories", icon: "📦" },
   { value: "ELECTRONICS", label: "Electronics", icon: "📱" },
-  { value: "BOOKS", label: "Books", icon: "📚" },
+  { value: "BOOK", label: "Books", icon: "📚" },
   { value: "ID_CARD", label: "ID Cards", icon: "🆔" },
   { value: "BAGS", label: "Bags & Backpacks", icon: "🎒" },
   { value: "ACCESSORIES", label: "Accessories", icon: "👜" },
+  { value: "CLOTHING", label: "Clothing", icon: "👕" },
   { value: "KEYS", label: "Keys", icon: "🔑" },
+  { value: "SPORTS", label: "Sports Equipment", icon: "⚽" },
   { value: "OTHER", label: "Other Items", icon: "📋" }
 ]
 
@@ -139,14 +33,92 @@ export default function Search() {
   const [searchQuery, setSearchQuery] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("ALL")
   const [typeFilter, setTypeFilter] = useState("ALL")
-  const [statusFilter, setStatusFilter] = useState("ACTIVE")
+  const [statusFilter, setStatusFilter] = useState("ALL")
   const [sortBy, setSortBy] = useState("date")
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("grid")
+  const [lostItems, setLostItems] = useState<any[]>([])
+  const [foundItems, setFoundItems] = useState<any[]>([])
+
+  // Fetch items from API
+  useEffect(() => {
+    const fetchItems = async () => {
+      setIsLoading(true)
+      try {
+        const [lostResponse, foundResponse] = await Promise.all([
+          fetch('/api/lost-items'),
+          fetch('/api/found-items')
+        ])
+
+        if (lostResponse.ok) {
+          const lostData = await lostResponse.json()
+          setLostItems(lostData.items || [])
+        }
+
+        if (foundResponse.ok) {
+          const foundData = await foundResponse.json()
+          setFoundItems(foundData.items || [])
+        }
+      } catch (error) {
+        console.error('Error fetching items:', error)
+        toast.error('Failed to load items')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchItems()
+  }, [])
+
+  // Combine and transform items for display
+  const allItems = useMemo(() => {
+    console.log('Lost items:', lostItems)
+    console.log('Found items:', foundItems)
+    
+    const transformedLost = lostItems.map(item => ({
+      id: item.id,
+      type: 'lost',
+      title: item.title,
+      description: item.description,
+      category: item.category,
+      location: item.location,
+      date: new Date(item.dateLost).toISOString().split('T')[0],
+      time: new Date(item.dateLost).toTimeString().split(' ')[0].substring(0, 5),
+      reporter: item.user?.name || 'Anonymous',
+      status: item.status,
+      views: 0,
+      contactAttempts: 0,
+      verified: true
+    }))
+
+    const transformedFound = foundItems.map(item => ({
+      id: item.id,
+      type: 'found',
+      title: item.title,
+      description: item.description,
+      category: item.category,
+      location: item.location,
+      date: new Date(item.dateFound).toISOString().split('T')[0],
+      time: new Date(item.dateFound).toTimeString().split(' ')[0].substring(0, 5),
+      reporter: item.user?.name || 'Anonymous',
+      status: item.status,
+      views: 0,
+      contactAttempts: 0,
+      verified: true
+    }))
+
+    const combined = [...transformedLost, ...transformedFound]
+    console.log('All items combined:', combined)
+    console.log('Total items:', combined.length)
+    return combined
+  }, [lostItems, foundItems])
 
   // Memoized filtered items for better performance
   const filteredItems = useMemo(() => {
-    return mockItems.filter(item => {
+    console.log('Filtering with:', { searchQuery, categoryFilter, typeFilter, statusFilter, sortBy })
+    console.log('All items before filter:', allItems.length)
+    
+    const filtered = allItems.filter(item => {
       const matchesQuery = searchQuery === '' || 
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -169,15 +141,13 @@ export default function Search() {
           return 0
       }
     })
-  }, [searchQuery, categoryFilter, typeFilter, statusFilter, sortBy])
+    
+    console.log('Filtered items:', filtered.length)
+    return filtered
+  }, [searchQuery, categoryFilter, typeFilter, statusFilter, sortBy, allItems])
 
   const handleSearch = () => {
-    setIsLoading(true)
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false)
-      toast.success(`Found ${filteredItems.length} items matching your criteria`)
-    }, 500)
+    toast.success(`Found ${filteredItems.length} items matching your criteria`)
   }
 
   const handleContact = (item: { title: string; reporter?: string; user?: { name: string } }) => {

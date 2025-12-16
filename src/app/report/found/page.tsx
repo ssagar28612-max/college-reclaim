@@ -152,7 +152,7 @@ export default function ReportFound() {
     setIsLoading(true)
     
     try {
-      // Combine date and time
+      // Combine date and time with Z suffix for UTC timezone
       const dateTime = formData.foundDate + (formData.foundTime ? 'T' + formData.foundTime : 'T00:00:00') + 'Z'
       
       const response = await fetch('/api/found-items', {
@@ -167,7 +167,6 @@ export default function ReportFound() {
           location: formData.customLocation || formData.foundLocation,
           dateFound: dateTime,
           handedToAdmin: false,
-          imageUrl: imagePreview.length > 0 ? imagePreview[0] : undefined,
         }),
       })
 
@@ -370,8 +369,12 @@ export default function ReportFound() {
                             value={formData.description}
                             onChange={(e) => setFormData({...formData, description: e.target.value})}
                             className="min-h-[100px]"
+                            minLength={10}
                             required
                           />
+                          <p className={`text-xs ${formData.description.length < 10 ? 'text-red-600' : 'text-gray-500'}`}>
+                            {formData.description.length}/500 characters (minimum 10 required)
+                          </p>
                           {errors.description && (
                             <p className="text-xs text-red-600 flex items-center gap-1">
                               <AlertCircle className="h-3 w-3" />
