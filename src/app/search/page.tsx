@@ -362,9 +362,7 @@ export default function Search() {
                       
                       {/* Status indicators */}
                       <div className="absolute top-3 right-3 flex gap-2 z-10">
-                        {item.urgent && <Badge variant="destructive" className="text-xs">Urgent</Badge>}
                         {item.verified && <Badge variant="secondary" className="text-xs bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">✓</Badge>}
-                        {item.reward && <Badge variant="outline" className="text-xs border-green-300 dark:border-green-600 text-green-700 dark:text-green-400">{item.reward}</Badge>}
                       </div>
 
                       <CardHeader className="pb-3">
