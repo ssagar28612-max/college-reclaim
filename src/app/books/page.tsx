@@ -177,7 +177,21 @@ export default function BooksPage() {
                         <span className="text-lg font-bold text-green-600 dark:text-green-400">
                           {formatPrice(book.priceOrRent, book.type)}
                         </span>
-                        Contact Information */}
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {book.type === 'RENT' ? 'Monthly' : 'One-time'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Condition Badge */}
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">{book.condition}</Badge>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {book.isAvailable ? 'Available' : 'Not Available'}
+                      </span>
+                    </div>
+
+                    {/* Contact Information */}
                     <div className="space-y-2 pt-2">
                       <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Owner Contact:</div>
                       {book.owner.email && (
@@ -197,21 +211,7 @@ export default function BooksPage() {
                           <span className="text-lg">📱</span>
                           <span>{book.owner.phoneNumber}</span>
                         </a>
-                      )}tion Badge */}
-                    <div className="flex items-center justify-between">
-                      <Badge variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">{book.condition}</Badge>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {book.isAvailable ? 'Available' : 'Not Available'}
-                      </span>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex gap-2 pt-2">
-                      <Link href={`/books/${book.id}`} className="flex-1">
-                        <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white" size="sm">
-                          View Details
-                        </Button>
-                      </Link>
+                      )}
                     </div>
                   </div>
                 </CardContent>
