@@ -13,39 +13,42 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Search, Plus, Bell, User, LogOut, Settings, Sparkles, Sun, Moon, BookOpen, CalendarDays } from "lucide-react"
+import { Search, Plus, Bell, User, LogOut, Settings, Sparkles, Sun, Moon, BookOpen, CalendarDays, Menu, X } from "lucide-react"
 import { useTheme } from "@/components/providers"
+import { useState } from "react"
 
 export function Navbar() {
   const { data: session, status } = useSession()
   const { theme, toggleTheme } = useTheme()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
     <nav className="border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg shadow-sm relative z-50 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+        <div className="flex justify-between items-center h-16">
           <motion.div 
             className="flex items-center"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <Link href="/" className="flex items-center space-x-3 group" prefetch={true}>
+            <Link href="/" className="flex items-center space-x-2 group" prefetch={true}>
               <motion.div 
-                className="w-10 h-10 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-md"
+                className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-md"
                 whileHover={{ scale: 1.05, rotate: 5 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Sparkles className="text-white w-5 h-5" />
+                <Sparkles className="text-white w-4 h-4 sm:w-5 sm:h-5" />
               </motion.div>
-              <span className="font-bold text-xl bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
+              <span className="font-bold text-base sm:text-xl bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent hidden xs:inline">
                 College Reclaim
               </span>
             </Link>
           </motion.div>
 
+          {/* Desktop Navigation */}
           <motion.div 
-            className="flex items-center space-x-2"
+            className="hidden md:flex items-center space-x-2"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
@@ -221,7 +224,134 @@ export function Navbar() {
                 </Link>
               </div>
             )}
+
+          {/* Mobile Menu Button */}
+          <motion.div 
+            className="flex md:hidden items-center space-x-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleTheme}
+              className="hover:bg-violet-50 dark:hover:bg-gray-800 dark:text-gray-300"
+            >
+              {theme === "light" ? (
+                <Moon className="h-4 w-4" />
+              ) : (
+                <Sun className="h-4 w-4" />
+              )}
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="hover:bg-violet-50 dark:hover:bg-gray-800 dark:text-gray-300"
+            >
+              {mobileMenuOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
+            </Button>
           </motion.div>
+        </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden border-t dark:border-gray-700 py-4"
+          >
+            <div className="flex flex-col space-y-3">
+              <Link href="/search" prefetch={true} onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="ghost" className="w-full justify-start dark:text-gray-300">
+                  <Search className="h-4 w-4 mr-2" />
+                  Search Items
+                </Button>
+              </Link>
+              
+              <Link href="/books" prefetch={true} onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="ghost" className="w-full justify-start dark:text-gray-300">
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  Book Marketplace
+                </Button>
+              </Link>
+              
+              <Link href="/events" prefetch={true} onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="ghost" className="w-full justify-start dark:text-gray-300">
+                  <CalendarDays className="h-4 w-4 mr-2" />
+                  Campus Events
+                </Button>
+              </Link>
+
+              {session ? (
+                <>
+                  <div className="border-t dark:border-gray-700 pt-3 mt-2"></div>
+                  <Link href="/report/lost" prefetch={true} onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="outline" className="w-full justify-start border-red-200 dark:border-red-800 text-red-600 dark:text-red-400">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Report Lost Item
+                    </Button>
+                  </Link>
+                  
+                  <Link href="/report/found" prefetch={true} onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="outline" className="w-full justify-start border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Report Found Item
+                    </Button>
+                  </Link>
+
+                  <div className="border-t dark:border-gray-700 pt-3 mt-2"></div>
+                  
+                  <Link href="/dashboard" prefetch={true} onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start dark:text-gray-300">
+                      <User className="h-4 w-4 mr-2" />
+                      Dashboard
+                    </Button>
+                  </Link>
+                  
+                  <Link href="/profile" prefetch={true} onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start dark:text-gray-300">
+                      <Settings className="h-4 w-4 mr-2" />
+                      Profile
+                    </Button>
+                  </Link>
+                  
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start text-red-600 dark:text-red-400"
+                    onClick={() => {
+                      setMobileMenuOpen(false)
+                      signOut()
+                    }}
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Log out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <div className="border-t dark:border-gray-700 pt-3 mt-2"></div>
+                  <Link href="/auth/signin" prefetch={true} onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start dark:text-gray-300">
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link href="/auth/signup" prefetch={true} onClick={() => setMobileMenuOpen(false)}>
+                    <Button className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white">
+                      Sign Up
+                    </Button>
+                  </Link>
+                </>
+              )}
+            </div>
+          </motion.div>
+        )}tion.div>
         </div>
       </div>
     </nav>
