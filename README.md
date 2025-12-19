@@ -1,134 +1,135 @@
-# College Reclaim - Lost & Found Web Application
+🎓 College ReClaim – Campus Lost & Found Platform
 
-A comprehensive Next.js application for managing lost and found items in college environments.
+College ReClaim is a web-based application designed to simplify lost and found management, book exchange, and event registration within college campuses. The platform provides a secure, centralized system for students and administrators to manage campus resources efficiently.
 
-## 🚀 Features
+🚀 Features
+Core Features
 
-### Core Features
-- **User Authentication**: Secure login/signup with NextAuth.js
-- **Lost Item Reporting**: Submit lost items with details, photos, and location
-- **Found Item Reporting**: Report found items with option to hand to admin
-- **Smart Search & Matching**: AI-powered matching between lost and found items
-- **Real-time Notifications**: Email and in-app notifications for matches
-- **Admin Panel**: Complete admin dashboard for managing all reports
+🔐 User Authentication – Secure login using Google OAuth via NextAuth.js
 
-### User Roles
-- **Students/Staff**: Can report lost/found items and search database
-- **Admin**: Can verify, approve/reject reports and manage system
+📦 Lost & Found Reporting – Students can report lost or found items with details
 
-## 🛠 Tech Stack
+📚 Book Exchange Module – Upload and exchange academic books within campus
 
-- **Frontend**: React + Next.js 15 (App Router)
-- **UI**: TailwindCSS + shadcn/ui components
-- **State Management**: React Query (TanStack Query)
-- **Animations**: Framer Motion
-- **Icons**: Lucide React
-- **Charts**: Recharts (for admin analytics)
-- **Backend**: Next.js API routes
-- **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: NextAuth.js
-- **Deployment**: Vercel-ready
+🎉 Event Registration – Register for college events digitally
 
-## 🔧 Getting Started
+✅ Admin Approval System – All submissions require admin verification
 
-### Prerequisites
-- Node.js 18+ 
-- npm or yarn
-- PostgreSQL database
+🧑‍💼 Admin Dashboard – Manage users, posts, and approvals
 
-### Installation
+User Roles
 
-1. **Clone and Install**
-   ```bash
-   cd college_reclaim
-   npm install
-   ```
+Students: Report lost/found items, exchange books, register for events
 
-2. **Environment Setup**
-   Create `.env.local` file:
-   ```env
-   DATABASE_URL="postgresql://username:password@localhost:5432/college_reclaim"
-   NEXTAUTH_URL="http://localhost:3000"
-   NEXTAUTH_SECRET="your-secret-key"
-   ```
+Admin: Review, approve/reject submissions and manage platform content
 
-3. **Database Setup**
-   ```bash
-   npx prisma generate
-   npx prisma migrate dev
-   ```
+🛠 Tech Stack
+Frontend
 
-4. **Development Server**
-   ```bash
-   npm run dev
-   ```
+Next.js (App Router) – Full-stack React framework
 
-5. **Open Application**
-   Visit http://localhost:3000
+React.js – Component-based UI
 
-## 🎨 UI Components
+Tailwind CSS – Responsive and modern UI styling
 
-Built with shadcn/ui for modern, accessible components:
-- Cards for item displays
-- Forms with validation
-- Data tables for admin views
-- Modals for interactions
-- Toast notifications
-- Navigation components
+Backend
 
-## 🔒 Authentication
+Next.js API Routes – Server-side logic and REST APIs
 
-- Email/password authentication
-- Optional Google OAuth
-- College email domain restriction (@college.edu)
-- Role-based access control (Student/Staff/Admin)
+Prisma ORM – Type-safe database access
 
-## 📱 Responsive Design
+Database
 
-- Mobile-first design approach
-- Fully responsive on all devices
-- Touch-friendly interface
-- Progressive Web App capabilities
+Neon DB (Serverless PostgreSQL) – Cloud-based relational database
 
-## 🚀 Deployment
+Authentication
 
-Ready for deployment on:
-- **Vercel** (Frontend - recommended)
-- **Supabase** (Database)
-- **Render** (Alternative hosting)
+NextAuth.js
 
-### Build for Production
-```bash
-npm run build
-npm start
-```
+Google OAuth 2.0
 
-## 🧪 Development Scripts
+Deployment
 
-```bash
-# Development server with Turbopack
+Vercel – Hosting and CI/CD
+
+🗄 Database Overview
+
+Neon DB is used to store:
+
+User profiles and roles
+
+Lost & found item details
+
+Book exchange listings
+
+Event registrations
+
+Admin approval status
+
+Prisma ORM ensures secure and efficient database operations.
+
+🔧 Getting Started
+Prerequisites
+
+Node.js 18+
+
+npm or yarn
+
+Neon PostgreSQL database
+
+📥 Clone the Repository
+git clone https://github.com/your-username/college-reclaim.git
+cd college-reclaim
+
+📦 Install Dependencies
+npm install
+
+⚙️ Environment Setup
+
+Create a .env.local file in the root directory:
+
+DATABASE_URL=your_neon_database_url
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your_secret_key
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+🗃 Database Setup
+npx prisma generate
+npx prisma migrate dev
+
+▶️ Run Development Server
 npm run dev
 
-# Build for production
-npm run build
 
-# Start production server
-npm start
+Open http://localhost:3000
+ in your browser.
 
-# Type checking
-npm run type-check
+🔒 Authentication & Security
 
-# Lint code
-npm run lint
+Google OAuth login
 
-# Database operations
-npx prisma studio      # Database GUI
-npx prisma migrate dev # Run migrations
-npx prisma generate    # Generate client
-```
+Role-based access control (Student / Admin)
 
----
+Secure environment variables
 
-**Made with ❤️ for college communities**
+Protected API routes
 
-> This application helps create a more connected and honest campus community by making it easier for students to recover their lost belongings and return found items to their rightful owners.
+📱 Responsive Design
+
+Mobile-first UI
+
+Fully responsive across devices
+
+Clean and accessible design
+
+🚀 Deployment
+
+The application is Vercel-ready and uses:
+
+Vercel – Frontend & backend hosting
+
+Neon DB – Cloud PostgreSQL
+
+Made with ❤️ Surya
+
