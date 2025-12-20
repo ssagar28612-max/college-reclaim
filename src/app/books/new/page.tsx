@@ -149,7 +149,7 @@ export default function NewBookPage() {
         condition: formData.condition,
         priceOrRent: priceValue,
         type: formData.type,
-        imageUrl: imageUrl
+        imageUrl: imageUrl || undefined
       }
 
       const response = await fetch('/api/books', {

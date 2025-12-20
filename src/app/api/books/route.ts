@@ -12,7 +12,7 @@ const BookSchema = z.object({
   condition: z.enum(['NEW', 'LIKE_NEW', 'GOOD', 'FAIR', 'POOR']),
   priceOrRent: z.number().min(0, 'Price must be non-negative').max(10000, 'Price too high'),
   type: z.enum(['RENT', 'SELL']),
-  imageUrl: z.string().url().optional().or(z.literal(''))
+  imageUrl: z.string().url().optional().or(z.literal('')).or(z.undefined())
 })
 
 // GET /api/books - List all books with optional filtering
