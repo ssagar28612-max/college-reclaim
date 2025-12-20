@@ -52,11 +52,13 @@ export default function Search() {
 
         if (lostResponse.ok) {
           const lostData = await lostResponse.json()
+          console.log('Lost items with images:', lostData.items.filter((item: any) => item.imageUrl))
           setLostItems(lostData.items || [])
         }
 
         if (foundResponse.ok) {
           const foundData = await foundResponse.json()
+          console.log('Found items with images:', foundData.items.filter((item: any) => item.imageUrl))
           setFoundItems(foundData.items || [])
         }
       } catch (error) {
@@ -392,6 +394,10 @@ export default function Search() {
                               src={item.imageUrl} 
                               alt={item.title}
                               className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
+                              onError={(e) => {
+                                console.error('Image failed to load:', item.imageUrl)
+                                e.currentTarget.style.display = 'none'
+                              }}
                             />
                           </div>
                         ) : (
