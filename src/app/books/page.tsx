@@ -150,8 +150,16 @@ export default function BooksPage() {
             {filteredBooks.map((book) => (
               <Card key={book.id} className="hover:shadow-xl transition-all duration-300 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                 {/* Book Image/Icon */}
-                <div className="relative h-48 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 flex items-center justify-center">
-                  <BookOpen className="h-16 w-16 text-blue-400 dark:text-blue-300" />
+                <div className="relative h-48 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 flex items-center justify-center overflow-hidden">
+                  {book.imageUrl ? (
+                    <img 
+                      src={book.imageUrl} 
+                      alt={book.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <BookOpen className="h-16 w-16 text-blue-400 dark:text-blue-300" />
+                  )}
                   <Badge className="absolute top-3 right-3 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200" variant={book.type === 'RENT' ? 'default' : 'secondary'}>
                     {book.type === 'RENT' ? 'For Rent' : 'For Sale'}
                   </Badge>
