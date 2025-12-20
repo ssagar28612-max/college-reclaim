@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, BookOpen, User, Calendar, DollarSign, MessageCircle, Edit3, Trash2, Heart, Share2 } from "lucide-react"
+import { ArrowLeft, BookOpen, User, Calendar, IndianRupee, MessageCircle, Edit3, Trash2, Heart, Share2 } from "lucide-react"
 import { toast } from "sonner"
 import { BookDetailSkeleton } from "@/components/loading/book-skeletons"
 
@@ -275,7 +275,7 @@ export default function BookDetailsPage() {
                       </div>
 
                       <div className="flex items-center gap-2 text-2xl font-bold text-green-600 dark:text-green-400">
-                        <DollarSign className="w-6 h-6" />
+                        <IndianRupee className="w-6 h-6" />
                         {book.priceOrRent}
                         <span className="text-sm text-gray-500 dark:text-gray-400 font-normal">
                           {book.type === 'RENT' ? '/ month' : 'one-time'}

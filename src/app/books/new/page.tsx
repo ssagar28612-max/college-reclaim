@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, BookOpen, Upload, DollarSign, Clock, ShoppingCart, Info } from "lucide-react"
+import { ArrowLeft, BookOpen, Upload, Clock, ShoppingCart, Info, X, IndianRupee } from "lucide-react"
 import { toast } from "sonner"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -27,14 +27,15 @@ export default function NewBookPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [formData, setFormData] = useState({
     title: "",
     author: "",
     description: "",
     condition: "",
     priceOrRent: "",
-    type: "",
-    imageUrl: ""
+    type: ""
   })
 
   // Redirect if not authenticated
@@ -86,6 +87,26 @@ export default function NewBookPage() {
     }))
   }
 
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("File size must be less than 5MB")
+        return
+      }
+      setUploadedFile(file)
+      toast.success("Image selected successfully")
+    }
+  }
+
+  const removeFile = () => {
+    setUploadedFile(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+    toast.success("Image removed")
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -104,6 +125,23 @@ export default function NewBookPage() {
         return
       }
 
+      // Upload image if exists
+      let imageUrl = undefined
+      if (uploadedFile) {
+        const formDataUpload = new FormData()
+        formDataUpload.append('file', uploadedFile)
+        
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: formDataUpload,
+        })
+        
+        if (uploadResponse.ok) {
+          const uploadData = await uploadResponse.json()
+          imageUrl = uploadData.url
+        }
+      }
+
       const bookData = {
         title: formData.title.trim(),
         author: formData.author.trim(),
@@ -111,7 +149,7 @@ export default function NewBookPage() {
         condition: formData.condition,
         priceOrRent: priceValue,
         type: formData.type,
-        imageUrl: formData.imageUrl.trim() || undefined
+        imageUrl: imageUrl
       }
 
       const response = await fetch('/api/books', {
@@ -271,20 +309,65 @@ export default function NewBookPage() {
                       </span>
                     </Label>
                     <div className="relative">
-                      <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <IndianRupee className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                       <Input
                         id="price"
                         type="number"
-                        min="0"
-                        step="0.01"
-                        placeholder="0"
+                        placeholder="0.00"
                         className="pl-10"
                         value={formData.priceOrRent}
                         onChange={(e) => handleInputChange('priceOrRent', e.target.value)}
                         required
+                        min="0"
+                        step="0.01"
                       />
                     </div>
                   </div>
+                </div>
+
+                {/* Upload Book Image (Optional) */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Upload Book Image (Optional)</Label>
+                  <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 hover:border-blue-400 dark:hover:border-blue-500 transition-colors">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full"
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Choose Image
+                    </Button>
+                    {uploadedFile && (
+                      <div className="mt-3 relative group">
+                        <img
+                          src={URL.createObjectURL(uploadedFile)}
+                          alt={uploadedFile.name}
+                          className="w-full h-48 object-cover rounded-lg border-2 border-gray-300 dark:border-gray-600"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          onClick={removeFile}
+                          className="absolute top-2 right-2"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                        <p className="text-xs text-gray-500 mt-2">{uploadedFile.name}</p>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    Add a photo to make your listing more attractive to potential renters/buyers. Max 5MB.
+                  </p>
                 </div>
 
                 {/* Condition */}
@@ -305,25 +388,6 @@ export default function NewBookPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-
-                {/* Image URL (Optional) */}
-                <div className="space-y-2">
-                  <Label htmlFor="imageUrl">Image URL (Optional)</Label>
-                  <div className="relative">
-                    <Upload className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="imageUrl"
-                      type="url"
-                      placeholder="https://example.com/book-image.jpg"
-                      className="pl-10"
-                      value={formData.imageUrl}
-                      onChange={(e) => handleInputChange('imageUrl', e.target.value)}
-                    />
-                  </div>
-                  <p className="text-sm text-gray-500">
-                    Add a photo URL to make your listing more attractive to potential renters/buyers.
-                  </p>
                 </div>
 
                 {/* Submit Buttons */}
