@@ -261,12 +261,54 @@ export default function SignIn() {
             </Card>
           </motion.div>
 
-          {/* Security Notice */}
+          {/* Admin/Coordinator Login */}
           <motion.div
             className="mt-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            <Card className="bg-gradient-to-br from-amber-50/80 to-orange-50/80 dark:from-amber-900/20 dark:to-orange-900/20 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 transition-colors duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3 mb-3">
+                  <Shield className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-amber-900 dark:text-amber-100 transition-colors duration-300">
+                    <p className="font-semibold mb-1">Staff Access</p>
+                    <p className="text-xs text-amber-800 dark:text-amber-200 transition-colors duration-300">
+                      Admin and Coordinator login for platform management
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Link href="/auth/admin-signin" className="flex-1">
+                    <Button 
+                      type="button"
+                      variant="outline" 
+                      className="w-full h-9 text-xs font-semibold border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-900 dark:text-amber-100"
+                    >
+                      Admin Login
+                    </Button>
+                  </Link>
+                  <Link href="/auth/coordinator-signin" className="flex-1">
+                    <Button 
+                      type="button"
+                      variant="outline" 
+                      className="w-full h-9 text-xs font-semibold border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-900 dark:text-amber-100"
+                    >
+                      Coordinator Login
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Security Notice */}
+          <motion.div
+            className="mt-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
           >
             <Card className="bg-blue-50/80 dark:bg-blue-900/30 backdrop-blur-sm border border-blue-200/50 dark:border-blue-700/50 transition-colors duration-300">
               <CardContent className="p-4">

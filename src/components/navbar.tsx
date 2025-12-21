@@ -186,9 +186,17 @@ export function Navbar() {
                     </DropdownMenuItem>
                     {session.user?.role === "ADMIN" && (
                       <DropdownMenuItem asChild>
-                        <Link href="/admin" className="cursor-pointer dark:text-gray-300 dark:hover:text-gray-100">
+                        <Link href="/admin" className="cursor-pointer text-red-600 dark:text-red-400 dark:hover:text-red-300">
                           <Settings className="mr-2 h-4 w-4" />
                           <span>Admin Panel</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    {session.user?.role === "COORDINATOR" && (
+                      <DropdownMenuItem asChild>
+                        <Link href="/coordinator" className="cursor-pointer text-blue-600 dark:text-blue-400 dark:hover:text-blue-300">
+                          <CalendarDays className="mr-2 h-4 w-4" />
+                          <span>Coordinator Dashboard</span>
                         </Link>
                       </DropdownMenuItem>
                     )}

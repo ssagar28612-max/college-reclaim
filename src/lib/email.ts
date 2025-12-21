@@ -125,6 +125,35 @@ export async function sendOTPEmail({ to, otp, expiryMinutes }: SendOTPEmailParam
   }
 }
 
+interface SendEmailParams {
+  to: string
+  subject: string
+  html: string
+  text?: string
+}
+
+export async function sendEmail({ to, subject, html, text }: SendEmailParams): Promise<void> {
+  const transporter = createTransporter()
+
+  const mailOptions = {
+    from: {
+      name: 'College Reclaim',
+      address: process.env.EMAIL_USER!,
+    },
+    to,
+    subject,
+    html,
+    text: text || '',
+  }
+
+  try {
+    await transporter.sendMail(mailOptions)
+  } catch (error) {
+    console.error('Failed to send email:', error)
+    throw new Error('Failed to send email. Please try again later.')
+  }
+}
+
 export async function verifyEmailConfiguration(): Promise<boolean> {
   try {
     const transporter = createTransporter()

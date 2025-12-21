@@ -1,853 +1,627 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Loading } from "@/components/ui/loading"
+import { Textarea } from "@/components/ui/textarea"
 import { 
-  Shield, Search, Mail, CheckCircle, XCircle, AlertTriangle, 
-  Users, Package, TrendingUp, Activity, Calendar, MapPin, 
-  User, Tag, Clock, Eye, Settings, LogOut, Home,
-  BarChart3, Download, Bell, Filter, RefreshCw
+  Shield, Mail, Trash2, BookOpen, Package, 
+  Calendar, UserCheck, ThumbsUp, ThumbsDown,
+  Moon, Sun, Home, LogOut
 } from "lucide-react"
 import { toast } from "sonner"
-
-// Enhanced mock data for demonstration
-const mockLostItems = [
-  {
-    id: "L001",
-    title: "iPhone 14 Pro",
-    description: "Black iPhone 14 Pro with cracked screen protector and blue case",
-    category: "Electronics",
-    location: "Library 3rd floor",
-    dateReported: "2025-01-10",
-    status: "active",
-    priority: "high",
-    reporter: "john.doe@university.edu",
-    reporterName: "John Doe",
-    matchScore: 95,
-    views: 156
-  },
-  {
-    id: "L002", 
-    title: "Blue Nike Backpack",
-    description: "Navy blue Nike backpack with white logo, has university keychain",
-    category: "Bags & Luggage",
-    location: "Student Center",
-    dateReported: "2025-01-09",
-    status: "matched",
-    priority: "medium",
-    reporter: "jane.smith@university.edu",
-    reporterName: "Jane Smith",
-    matchScore: 88,
-    views: 89
-  },
-  {
-    id: "L003",
-    title: "Silver MacBook Air",
-    description: "13-inch MacBook Air with university stickers",
-    category: "Electronics",
-    location: "Computer Lab B",
-    dateReported: "2025-01-08",
-    status: "resolved",
-    priority: "high",
-    reporter: "alex.wilson@university.edu",
-    reporterName: "Alex Wilson",
-    matchScore: 92,
-    views: 234
-  }
-]
-
-const mockFoundItems = [
-  {
-    id: "F001",
-    title: "Black Smartphone",
-    description: "Black smartphone with blue case, found at charging station",
-    category: "Electronics", 
-    location: "Library charging station",
-    dateFound: "2025-01-10",
-    status: "pending",
-    priority: "high",
-    handedToAdmin: true,
-    finder: "admin@university.edu",
-    finderName: "Campus Security",
-    matchScore: 95,
-    claimRequests: 3
-  },
-  {
-    id: "F002",
-    title: "Blue Backpack",
-    description: "Blue backpack with books inside, Nike brand with keychain",
-    category: "Bags & Luggage",
-    location: "Student Center lost & found",
-    dateFound: "2025-01-09", 
-    status: "claimed",
-    priority: "medium",
-    handedToAdmin: true,
-    finder: "security@university.edu",
-    finderName: "Security Team",
-    matchScore: 88,
-    claimRequests: 1
-  },
-  {
-    id: "F003",
-    title: "Wireless Earbuds",
-    description: "White AirPods Pro with charging case",
-    category: "Electronics",
-    location: "Gymnasium",
-    dateFound: "2025-01-07",
-    status: "pending",
-    priority: "low",
-    handedToAdmin: false,
-    finder: "sport.staff@university.edu",
-    finderName: "Sports Staff",
-    matchScore: 0,
-    claimRequests: 7
-  }
-]
-
-const recentActivity = [
-  {
-    id: 1,
-    type: "match",
-    message: "New match found: Blue Nike Backpack - 95% confidence",
-    timestamp: "5 min ago",
-    status: "success"
-  },
-  {
-    id: 2,
-    type: "report",
-    message: "New lost item: iPhone 14 Pro reported by john.doe@university.edu",
-    timestamp: "1 hour ago",
-    status: "info"
-  },
-  {
-    id: 3,
-    type: "claim",
-    message: "Item claimed: Silver MacBook Air successfully returned",
-    timestamp: "2 hours ago",
-    status: "success"
-  },
-  {
-    id: 4,
-    type: "admin",
-    message: "Item handed to security: Wireless earbuds",
-    timestamp: "3 hours ago",
-    status: "warning"
-  }
-]
+import { useTheme } from "@/components/providers"
 
 export default function AdminDashboard() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [activeTab, setActiveTab] = useState("overview")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [categoryFilter, setCategoryFilter] = useState("all")
+  const router = useRouter()
+  const { theme, toggleTheme } = useTheme()
+  const [activeTab, setActiveTab] = useState("books")
   const [isLoading, setIsLoading] = useState(false)
+  const [coordinatorRequests, setCoordinatorRequests] = useState<any[]>([])
+  const [books, setBooks] = useState<any[]>([])
+  const [lostItems, setLostItems] = useState<any[]>([])
+  const [foundItems, setFoundItems] = useState<any[]>([])
+  const [events, setEvents] = useState<any[]>([])
+  const [users, setUsers] = useState<any[]>([])
+  
+  // Notification form
+  const [notificationSubject, setNotificationSubject] = useState("")
+  const [notificationMessage, setNotificationMessage] = useState("")
+  const [recipientEmail, setRecipientEmail] = useState("")
+  const [sendToAll, setSendToAll] = useState(true)
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active": return "bg-blue-100 text-blue-800 border-blue-200"
-      case "matched": return "bg-emerald-100 text-emerald-800 border-emerald-200"
-      case "pending": return "bg-yellow-100 text-yellow-800 border-yellow-200"
-      case "resolved": return "bg-gray-100 text-gray-800 border-gray-200"
-      case "claimed": return "bg-green-100 text-green-800 border-green-200"
-      default: return "bg-gray-100 text-gray-800 border-gray-200"
-    }
-  }
+  useEffect(() => {
+    fetchData()
+  }, [activeTab])
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high": return "text-red-600"
-      case "medium": return "text-yellow-600"
-      case "low": return "text-green-600"
-      default: return "text-gray-600"
-    }
-  }
-
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case "match": return <CheckCircle className="h-4 w-4 text-emerald-600" />
-      case "report": return <Package className="h-4 w-4 text-blue-600" />
-      case "claim": return <Users className="h-4 w-4 text-green-600" />
-      case "admin": return <Shield className="h-4 w-4 text-yellow-600" />
-      default: return <Activity className="h-4 w-4 text-gray-600" />
-    }
-  }
-
-  const handleAction = async (action: string, itemId: string) => {
-    setIsLoading(true)
-    
+  const fetchData = async () => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      toast.success(`${action} completed for item ${itemId}`, {
-        duration: 3000,
-      })
+      if (activeTab === "coordinators") {
+        const res = await fetch("/api/coordinator-requests")
+        const data = await res.json()
+        setCoordinatorRequests(data.requests || [])
+      } else if (activeTab === "books") {
+        const res = await fetch("/api/books")
+        const data = await res.json()
+        setBooks(Array.isArray(data) ? data : data.books || data.items || [])
+      } else if (activeTab === "lost") {
+        const res = await fetch("/api/lost-items")
+        const data = await res.json()
+        setLostItems(Array.isArray(data) ? data : data.items || data.lostItems || [])
+      } else if (activeTab === "found") {
+        const res = await fetch("/api/found-items")
+        const data = await res.json()
+        setFoundItems(Array.isArray(data) ? data : data.items || data.foundItems || [])
+      } else if (activeTab === "events") {
+        const res = await fetch("/api/events")
+        const data = await res.json()
+        setEvents(Array.isArray(data) ? data : data.events || [])
+      } else if (activeTab === "notify") {
+        const res = await fetch("/api/admin/users")
+        const data = await res.json()
+        setUsers(data.users || [])
+      }
     } catch (error) {
-      toast.error(`Failed to ${action.toLowerCase()} item ${itemId}`)
+      console.error("Error fetching data:", error)
+    }
+  }
+
+  const handleDelete = async (type: string, id: string) => {
+    if (!confirm("Are you sure you want to delete this item?")) return
+    
+    setIsLoading(true)
+    try {
+      const endpoint = type === "book" ? `/api/admin/books/${id}` 
+        : type === "lost" ? `/api/admin/lost-items/${id}`
+        : type === "found" ? `/api/admin/found-items/${id}`
+        : `/api/admin/events/${id}`
+      
+      const res = await fetch(endpoint, { method: "DELETE" })
+      
+      if (res.ok) {
+        toast.success("Item deleted successfully")
+        fetchData()
+      } else {
+        toast.error("Failed to delete item")
+      }
+    } catch (error) {
+      toast.error("Error deleting item")
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleBulkAction = async (action: string) => {
+  const handleCoordinatorAction = async (requestId: string, action: "approve" | "reject") => {
     setIsLoading(true)
-    
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      toast.success(`${action} completed successfully`)
+      const res = await fetch(`/api/coordinator-requests/${requestId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action })
+      })
+
+      if (res.ok) {
+        toast.success(`Request ${action}d successfully`)
+        fetchData()
+      } else {
+        toast.error(`Failed to ${action} request`)
+      }
     } catch (error) {
-      toast.error(`Failed to ${action.toLowerCase()}`)
+      toast.error("Error processing request")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSendNotification = async () => {
+    if (!notificationSubject || !notificationMessage) {
+      toast.error("Please enter subject and message")
+      return
+    }
+    
+    if (!sendToAll && !recipientEmail) {
+      toast.error("Please select a recipient")
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const res = await fetch("/api/admin/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          subject: notificationSubject, 
+          message: notificationMessage,
+          recipientEmail: sendToAll ? null : recipientEmail
+        })
+      })
+      
+      const data = await res.json()
+      
+      if (res.ok) {
+        toast.success(data.message || "Notification sent successfully!")
+        setNotificationSubject("")
+        setNotificationMessage("")
+        setRecipientEmail("")
+      } else {
+        toast.error(data.error || "Failed to send notification")
+      }
+    } catch (error) {
+      console.error("Error sending notification:", error)
+      toast.error("Failed to send notification")
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 relative overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-400/10 to-pink-400/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-indigo-400/10 to-purple-400/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-      </div>
-
-      {/* Navigation */}
-      <motion.nav 
-        className="relative z-10 bg-white/80 backdrop-blur-sm border-b border-white/20 shadow-lg"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      {/* Header */}
+      <header className="bg-white dark:bg-gray-900 border-b-2 border-gray-200 dark:border-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <Link href="/" className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <Shield className="text-white w-5 h-5" />
-                </div>
-                <div>
-                  <span className="font-bold text-xl bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                    College Reclaim
-                  </span>
-                  <Badge variant="secondary" className="ml-2">Admin</Badge>
-                </div>
-              </Link>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm">
-                <Bell className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Notifications</span>
+          <div className="flex justify-between items-center h-16">
+            <Link href="/" className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+                <Shield className="text-white w-6 h-6" />
+              </div>
+              <div>
+                <span className="font-bold text-xl text-gray-900 dark:text-white">College Reclaim</span>
+                <Badge className="ml-2 bg-purple-600 text-white border-0">Admin</Badge>
+              </div>
+            </Link>
+            
+            <div className="flex items-center space-x-2">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={toggleTheme}
+                className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
               </Button>
               <Link href="/">
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800">
                   <Home className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">Public Site</span>
+                  Home
                 </Button>
               </Link>
-              <Button variant="ghost" size="sm">
-                <Settings className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Settings</span>
-              </Button>
-              <Button variant="ghost" size="sm">
-                <LogOut className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Logout</span>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </motion.nav>
-
-      {/* Header */}
-      <motion.div 
-        className="relative z-10 bg-white/60 backdrop-blur-sm border-b border-white/20"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.1 }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                Admin Dashboard
-              </h1>
-              <p className="text-gray-600 mt-2">Manage lost and found items across campus</p>
-            </div>
-            <div className="flex space-x-3">
               <Button 
-                onClick={() => handleBulkAction("Send Notifications")}
-                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
-                disabled={isLoading}
+                variant="ghost" 
+                size="sm" 
+                onClick={() => router.push("/auth/signin")}
+                className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
               >
-                {isLoading ? <Loading size="sm" /> : <Mail className="h-4 w-4 mr-2" />}
-                Send Notifications
-              </Button>
-              <Button variant="outline">
-                <Download className="h-4 w-4 mr-2" />
-                Generate Report
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
               </Button>
             </div>
           </div>
         </div>
-      </motion.div>
+      </header>
 
       {/* Main Content */}
-      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Admin Dashboard</h1>
+          <p className="text-gray-700 dark:text-gray-300">Manage books, found items, events, and coordinators</p>
+        </div>
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm shadow-lg">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white">
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Overview
+          <TabsList className="grid w-full grid-cols-6 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 p-1">
+            <TabsTrigger 
+              value="books" 
+              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-gray-900 dark:text-white font-medium"
+            >
+              <BookOpen className="h-4 w-4 mr-2" />
+              Books
             </TabsTrigger>
-            <TabsTrigger value="lost" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white">
+            <TabsTrigger 
+              value="lost"
+              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-gray-900 dark:text-white font-medium"
+            >
               <Package className="h-4 w-4 mr-2" />
               Lost Items
             </TabsTrigger>
-            <TabsTrigger value="found" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white">
-              <CheckCircle className="h-4 w-4 mr-2" />
+            <TabsTrigger 
+              value="found"
+              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-gray-900 dark:text-white font-medium"
+            >
+              <Package className="h-4 w-4 mr-2" />
               Found Items
             </TabsTrigger>
-            <TabsTrigger value="matches" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white">
-              <Users className="h-4 w-4 mr-2" />
-              Matches
+            <TabsTrigger 
+              value="events"
+              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-gray-900 dark:text-white font-medium"
+            >
+              <Calendar className="h-4 w-4 mr-2" />
+              Events
+            </TabsTrigger>
+            <TabsTrigger 
+              value="coordinators"
+              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-gray-900 dark:text-white font-medium relative"
+            >
+              <UserCheck className="h-4 w-4 mr-2" />
+              Coordinators
+              {coordinatorRequests.filter(r => r.status === "PENDING").length > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                  {coordinatorRequests.filter(r => r.status === "PENDING").length}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="notifications"
+              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-gray-900 dark:text-white font-medium"
+            >
+              <Mail className="h-4 w-4 mr-2" />
+              Notify
             </TabsTrigger>
           </TabsList>
 
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6">
-            <motion.div 
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <Card className="bg-white/80 backdrop-blur-sm shadow-lg border border-white/20 hover:shadow-xl transition-all duration-300">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Total Lost Items</p>
-                      <p className="text-3xl font-bold text-red-600">127</p>
-                      <p className="text-xs text-gray-500 mt-1">+12 this week</p>
-                    </div>
-                    <div className="p-3 bg-red-100 rounded-full">
-                      <Package className="h-6 w-6 text-red-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white/80 backdrop-blur-sm shadow-lg border border-white/20 hover:shadow-xl transition-all duration-300">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Found Items</p>
-                      <p className="text-3xl font-bold text-green-600">89</p>
-                      <p className="text-xs text-gray-500 mt-1">+8 this week</p>
-                    </div>
-                    <div className="p-3 bg-green-100 rounded-full">
-                      <CheckCircle className="h-6 w-6 text-green-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white/80 backdrop-blur-sm shadow-lg border border-white/20 hover:shadow-xl transition-all duration-300">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Successful Matches</p>
-                      <p className="text-3xl font-bold text-blue-600">76</p>
-                      <p className="text-xs text-gray-500 mt-1">+5 this week</p>
-                    </div>
-                    <div className="p-3 bg-blue-100 rounded-full">
-                      <Users className="h-6 w-6 text-blue-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white/80 backdrop-blur-sm shadow-lg border border-white/20 hover:shadow-xl transition-all duration-300">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Success Rate</p>
-                      <p className="text-3xl font-bold text-purple-600">85%</p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        <TrendingUp className="inline h-3 w-3 mr-1" />
-                        +2% from last month
-                      </p>
-                    </div>
-                    <div className="p-3 bg-purple-100 rounded-full">
-                      <TrendingUp className="h-6 w-6 text-purple-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* Recent Activity */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-            >
-              <Card className="bg-white/80 backdrop-blur-sm shadow-lg border border-white/20">
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Activity className="h-5 w-5 mr-2" />
-                    Recent Activity
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {recentActivity.map((activity) => (
+          {/* Books Tab */}
+          <TabsContent value="books">
+            <Card className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800">
+              <CardHeader>
+                <CardTitle className="text-gray-900 dark:text-white">Manage Books</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {!Array.isArray(books) || books.length === 0 ? (
+                    <p className="text-center py-8 text-gray-700 dark:text-gray-300">No books listed</p>
+                  ) : (
+                    books.map((book: any) => (
                       <motion.div
-                        key={activity.id}
-                        className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 transition-all duration-200"
-                        whileHover={{ scale: 1.02 }}
+                        key={book.id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg"
                       >
-                        <div className="flex items-center space-x-3">
-                          {getActivityIcon(activity.type)}
-                          <div>
-                            <p className="font-medium text-gray-800">{activity.message}</p>
-                            <p className="text-xs text-gray-500 flex items-center mt-1">
-                              <Clock className="h-3 w-3 mr-1" />
-                              {activity.timestamp}
-                            </p>
-                          </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg text-gray-900 dark:text-white">{book.title}</h3>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">{book.author}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {book.type} • ₹{book.price} • {book.condition}
+                          </p>
                         </div>
-                        <Badge variant="outline" className={
-                          activity.status === 'success' ? 'border-green-300 text-green-700' :
-                          activity.status === 'warning' ? 'border-yellow-300 text-yellow-700' :
-                          'border-blue-300 text-blue-700'
-                        }>
-                          {activity.status}
-                        </Badge>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDelete("book", book.id)}
+                          disabled={isLoading}
+                          className="bg-red-600 hover:bg-red-700 text-white"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </Button>
                       </motion.div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Lost Items Tab */}
-          <TabsContent value="lost" className="space-y-6">
-            <motion.div 
-              className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <h2 className="text-2xl font-bold text-gray-800">Lost Items Management</h2>
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Search lost items..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-64"
-                  />
-                </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-32">
-                    <Filter className="h-4 w-4 mr-2" />
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="matched">Matched</SelectItem>
-                    <SelectItem value="resolved">Resolved</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button variant="outline" size="sm" onClick={() => handleBulkAction("Refresh Data")}>
-                  <RefreshCw className="h-4 w-4" />
-                </Button>
-              </div>
-            </motion.div>
-
-            <motion.div 
-              className="grid gap-6"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-            >
-              {mockLostItems.map((item, index) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.1 * index }}
-                >
-                  <Card className="bg-white/80 backdrop-blur-sm shadow-lg border-l-4 border-l-red-400 hover:shadow-xl transition-all duration-300">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between">
+          <TabsContent value="lost">
+            <Card className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800">
+              <CardHeader>
+                <CardTitle className="text-gray-900 dark:text-white">Manage Lost Items</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {!Array.isArray(lostItems) || lostItems.length === 0 ? (
+                    <p className="text-center py-8 text-gray-700 dark:text-gray-300">No lost items</p>
+                  ) : (
+                    lostItems.map((item: any) => (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg"
+                      >
                         <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-3">
-                            <h3 className="text-lg font-semibold text-gray-800">{item.title}</h3>
-                            <Badge className={getStatusColor(item.status)}>
-                              {item.status}
-                            </Badge>
-                            <div className={`flex items-center text-xs ${getPriorityColor(item.priority)}`}>
-                              <AlertTriangle className="h-3 w-3 mr-1" />
-                              {item.priority} priority
-                            </div>
-                          </div>
-                          <p className="text-gray-600 mb-4 leading-relaxed">{item.description}</p>
-                          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm text-gray-500">
-                            <div className="flex items-center">
-                              <MapPin className="h-4 w-4 mr-2" />
-                              {item.location}
-                            </div>
-                            <div className="flex items-center">
-                              <Calendar className="h-4 w-4 mr-2" />
-                              {item.dateReported}
-                            </div>
-                            <div className="flex items-center">
-                              <User className="h-4 w-4 mr-2" />
-                              {item.reporterName}
-                            </div>
-                            <div className="flex items-center">
-                              <Tag className="h-4 w-4 mr-2" />
-                              {item.category}
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
-                            <div className="flex items-center space-x-4 text-xs text-gray-500">
-                              <div className="flex items-center">
-                                <Eye className="h-3 w-3 mr-1" />
-                                {item.views} views
-                              </div>
-                              {item.matchScore > 0 && (
-                                <div className="flex items-center">
-                                  <CheckCircle className="h-3 w-3 mr-1 text-green-500" />
-                                  {item.matchScore}% match found
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex space-x-2">
-                              <Button 
-                                size="sm" 
-                                onClick={() => handleAction("Contact Reporter", item.id)}
-                                disabled={isLoading}
-                              >
-                                <Mail className="h-4 w-4 mr-2" />
-                                Contact
-                              </Button>
-                              <Button 
-                                size="sm" 
-                                variant="outline" 
-                                onClick={() => handleAction("Find Matches", item.id)}
-                                disabled={isLoading}
-                              >
-                                <Search className="h-4 w-4 mr-2" />
-                                Find Matches
-                              </Button>
-                              <Button 
-                                size="sm" 
-                                variant="outline" 
-                                onClick={() => handleAction("Mark Resolved", item.id)}
-                                disabled={isLoading}
-                              >
-                                <CheckCircle className="h-4 w-4 mr-2" />
-                                Resolve
-                              </Button>
-                            </div>
-                          </div>
+                          <h3 className="font-semibold text-lg text-gray-900 dark:text-white">{item.title}</h3>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">{item.description}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {item.category} • {item.location} • {new Date(item.dateLost).toLocaleDateString()}
+                          </p>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </motion.div>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDelete("lost", item.id)}
+                          disabled={isLoading}
+                          className="bg-red-600 hover:bg-red-700 text-white"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </Button>
+                      </motion.div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Found Items Tab */}
-          <TabsContent value="found" className="space-y-6">
-            <motion.div 
-              className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <h2 className="text-2xl font-bold text-gray-800">Found Items Management</h2>
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Search found items..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-64"
-                  />
-                </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-32">
-                    <Filter className="h-4 w-4 mr-2" />
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="claimed">Claimed</SelectItem>
-                    <SelectItem value="matched">Matched</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button variant="outline" size="sm" onClick={() => handleBulkAction("Refresh Data")}>
-                  <RefreshCw className="h-4 w-4" />
-                </Button>
-              </div>
-            </motion.div>
-
-            <motion.div 
-              className="grid gap-6"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-            >
-              {mockFoundItems.map((item, index) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.1 * index }}
-                >
-                  <Card className="bg-white/80 backdrop-blur-sm shadow-lg border-l-4 border-l-green-400 hover:shadow-xl transition-all duration-300">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between">
+          <TabsContent value="found">
+            <Card className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800">
+              <CardHeader>
+                <CardTitle className="text-gray-900 dark:text-white">Manage Found Items</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {!Array.isArray(foundItems) || foundItems.length === 0 ? (
+                    <p className="text-center py-8 text-gray-700 dark:text-gray-300">No found items</p>
+                  ) : (
+                    foundItems.map((item: any) => (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg"
+                      >
                         <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-3">
-                            <h3 className="text-lg font-semibold text-gray-800">{item.title}</h3>
-                            <Badge className={getStatusColor(item.status)}>
-                              {item.status}
-                            </Badge>
-                            {item.handedToAdmin && (
-                              <Badge variant="secondary" className="bg-indigo-100 text-indigo-800">
-                                <Shield className="h-3 w-3 mr-1" />
-                                With Security
-                              </Badge>
-                            )}
-                            <div className={`flex items-center text-xs ${getPriorityColor(item.priority)}`}>
-                              <AlertTriangle className="h-3 w-3 mr-1" />
-                              {item.priority} priority
-                            </div>
-                          </div>
-                          <p className="text-gray-600 mb-4 leading-relaxed">{item.description}</p>
-                          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm text-gray-500">
-                            <div className="flex items-center">
-                              <MapPin className="h-4 w-4 mr-2" />
-                              {item.location}
-                            </div>
-                            <div className="flex items-center">
-                              <Calendar className="h-4 w-4 mr-2" />
-                              {item.dateFound}
-                            </div>
-                            <div className="flex items-center">
-                              <User className="h-4 w-4 mr-2" />
-                              {item.finderName}
-                            </div>
-                            <div className="flex items-center">
-                              <Tag className="h-4 w-4 mr-2" />
-                              {item.category}
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
-                            <div className="flex items-center space-x-4 text-xs text-gray-500">
-                              <div className="flex items-center">
-                                <Users className="h-3 w-3 mr-1" />
-                                {item.claimRequests} claim requests
-                              </div>
-                              {item.matchScore > 0 && (
-                                <div className="flex items-center">
-                                  <CheckCircle className="h-3 w-3 mr-1 text-green-500" />
-                                  {item.matchScore}% match confidence
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex space-x-2">
-                              <Button 
-                                size="sm" 
-                                onClick={() => handleAction("Contact Finder", item.id)}
-                                disabled={isLoading}
-                              >
-                                <Mail className="h-4 w-4 mr-2" />
-                                Contact
-                              </Button>
-                              <Button 
-                                size="sm" 
-                                variant="outline" 
-                                onClick={() => handleAction("Find Owner", item.id)}
-                                disabled={isLoading}
-                              >
-                                <Search className="h-4 w-4 mr-2" />
-                                Find Owner
-                              </Button>
-                              <Button 
-                                size="sm" 
-                                variant="outline" 
-                                onClick={() => handleAction("Mark Returned", item.id)}
-                                disabled={isLoading}
-                              >
-                                <CheckCircle className="h-4 w-4 mr-2" />
-                                Returned
-                              </Button>
-                            </div>
-                          </div>
+                          <h3 className="font-semibold text-lg text-gray-900 dark:text-white">{item.title}</h3>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">{item.description}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {item.category} • {item.location} • {new Date(item.dateFound).toLocaleDateString()}
+                          </p>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </motion.div>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDelete("found", item.id)}
+                          disabled={isLoading}
+                          className="bg-red-600 hover:bg-red-700 text-white"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </Button>
+                      </motion.div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
-          {/* Matches Tab */}
-          <TabsContent value="matches" className="space-y-6">
-            <motion.div 
-              className="flex items-center justify-between"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <h2 className="text-2xl font-bold text-gray-800">Potential Matches</h2>
-              <Button 
-                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
-                onClick={() => handleBulkAction("Run Auto-Match")}
-                disabled={isLoading}
-              >
-                {isLoading ? <Loading size="sm" /> : <Search className="h-4 w-4 mr-2" />}
-                Run Auto-Match
-              </Button>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-            >
-              <Card className="bg-white/80 backdrop-blur-sm shadow-lg border-l-4 border-l-blue-400">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-6">
-                        <h3 className="text-xl font-bold text-gray-800">📱 Smartphone Match</h3>
-                        <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200">
-                          95% Confidence
-                        </Badge>
-                        <Badge variant="outline" className="border-blue-300 text-blue-700">
-                          High Priority
-                        </Badge>
-                      </div>
-                      
-                      <div className="grid lg:grid-cols-2 gap-6">
-                        <motion.div 
-                          className="p-6 bg-gradient-to-br from-red-50 to-red-100 rounded-xl border border-red-200"
-                          whileHover={{ scale: 1.02 }}
+          {/* Events Tab */}
+          <TabsContent value="events">
+            <Card className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800">
+              <CardHeader>
+                <CardTitle className="text-gray-900 dark:text-white">Manage Events</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {!Array.isArray(events) || events.length === 0 ? (
+                    <p className="text-center py-8 text-gray-700 dark:text-gray-300">No events</p>
+                  ) : (
+                    events.map((event: any) => (
+                      <motion.div
+                        key={event.id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg"
+                      >
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg text-gray-900 dark:text-white">{event.title}</h3>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">{event.description}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {event.clubOrDept} • {event.venue} • {new Date(event.date).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDelete("event", event.id)}
+                          disabled={isLoading}
+                          className="bg-red-600 hover:bg-red-700 text-white"
                         >
-                          <h4 className="font-semibold text-red-800 mb-3 flex items-center">
-                            <Package className="h-4 w-4 mr-2" />
-                            Lost Item
-                          </h4>
-                          <p className="font-medium text-gray-800 mb-2">iPhone 14 Pro</p>
-                          <p className="text-sm text-gray-600 mb-4">Black iPhone with cracked screen protector and blue case</p>
-                          <div className="space-y-2 text-xs text-gray-600">
-                            <div className="flex items-center">
-                              <MapPin className="h-3 w-3 mr-2" />
-                              Library 3rd floor
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </Button>
+                      </motion.div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Coordinators Tab */}
+          <TabsContent value="coordinators">
+            <Card className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800">
+              <CardHeader>
+                <CardTitle className="text-gray-900 dark:text-white">Coordinator Requests</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {!Array.isArray(coordinatorRequests) || coordinatorRequests.length === 0 ? (
+                    <p className="text-center py-8 text-gray-700 dark:text-gray-300">No coordinator requests</p>
+                  ) : (
+                    coordinatorRequests.map((request: any) => (
+                      <motion.div
+                        key={request.id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className={`p-4 border-2 rounded-lg ${
+                          request.status === "PENDING" 
+                            ? "border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20" 
+                            : request.status === "APPROVED"
+                            ? "border-green-400 bg-green-50 dark:bg-green-900/20"
+                            : "border-red-400 bg-red-50 dark:bg-red-900/20"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <h3 className="font-semibold text-lg text-gray-900 dark:text-white">{request.name}</h3>
+                              <Badge className={
+                                request.status === "PENDING"
+                                  ? "bg-yellow-600 text-white border-0"
+                                  : request.status === "APPROVED"
+                                  ? "bg-green-600 text-white border-0"
+                                  : "bg-red-600 text-white border-0"
+                              }>
+                                {request.status}
+                              </Badge>
                             </div>
-                            <div className="flex items-center">
-                              <Calendar className="h-3 w-3 mr-2" />
-                              January 10, 2025
-                            </div>
-                            <div className="flex items-center">
-                              <User className="h-3 w-3 mr-2" />
-                              john.doe@university.edu
-                            </div>
+                            <p className="text-sm text-gray-700 dark:text-gray-300 mb-1"><strong>Email:</strong> {request.email}</p>
+                            <p className="text-sm text-gray-700 dark:text-gray-300 mb-1"><strong>Department:</strong> {request.department}</p>
+                            {request.phoneNumber && (
+                              <p className="text-sm text-gray-700 dark:text-gray-300 mb-1"><strong>Phone:</strong> {request.phoneNumber}</p>
+                            )}
+                            <p className="text-sm text-gray-700 dark:text-gray-300 mt-2"><strong>Message:</strong> {request.message}</p>
                           </div>
-                        </motion.div>
-
-                        <motion.div 
-                          className="p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200"
-                          whileHover={{ scale: 1.02 }}
-                        >
-                          <h4 className="font-semibold text-green-800 mb-3 flex items-center">
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            Found Item
-                          </h4>
-                          <p className="font-medium text-gray-800 mb-2">Black Smartphone</p>
-                          <p className="text-sm text-gray-600 mb-4">Black phone with blue case, found at charging station</p>
-                          <div className="space-y-2 text-xs text-gray-600">
-                            <div className="flex items-center">
-                              <MapPin className="h-3 w-3 mr-2" />
-                              Library charging station
+                          {request.status === "PENDING" && (
+                            <div className="flex flex-col space-y-2 ml-4">
+                              <Button
+                                size="sm"
+                                onClick={() => handleCoordinatorAction(request.id, "approve")}
+                                disabled={isLoading}
+                                className="bg-green-600 hover:bg-green-700 text-white"
+                              >
+                                <ThumbsUp className="w-4 h-4 mr-2" />
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleCoordinatorAction(request.id, "reject")}
+                                disabled={isLoading}
+                                className="bg-red-600 hover:bg-red-700 text-white"
+                              >
+                                <ThumbsDown className="w-4 h-4 mr-2" />
+                                Reject
+                              </Button>
                             </div>
-                            <div className="flex items-center">
-                              <Calendar className="h-3 w-3 mr-2" />
-                              January 10, 2025
-                            </div>
-                            <div className="flex items-center">
-                              <Shield className="h-3 w-3 mr-2" />
-                              Campus Security
-                            </div>
-                          </div>
-                        </motion.div>
-                      </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-                      <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                        <h5 className="font-medium text-blue-800 mb-2">Match Analysis</h5>
-                        <ul className="text-sm text-blue-700 space-y-1">
-                          <li>• Location proximity: Same building</li>
-                          <li>• Time correlation: Same day</li>
-                          <li>• Description similarity: 95% match</li>
-                          <li>• Category match: Electronics</li>
-                        </ul>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col space-y-2 ml-6">
-                      <Button 
-                        onClick={() => handleAction("Approve Match", "M001")}
-                        className="bg-emerald-600 hover:bg-emerald-700"
-                        disabled={isLoading}
-                      >
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Approve Match
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        onClick={() => handleAction("Reject Match", "M001")}
-                        disabled={isLoading}
-                      >
-                        <XCircle className="h-4 w-4 mr-2" />
-                        Reject
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => handleAction("Contact Both Parties", "M001")}
-                        disabled={isLoading}
-                      >
-                        <Mail className="h-4 w-4 mr-2" />
-                        Contact Both
-                      </Button>
-                    </div>
+          {/* Notifications Tab */}
+          <TabsContent value="notifications">
+            <Card className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800">
+              <CardHeader>
+                <CardTitle className="text-gray-900 dark:text-white">Send Email Notification</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {/* Send to All or Specific User Toggle */}
+                  <div className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        checked={sendToAll}
+                        onChange={() => { setSendToAll(true); setRecipientEmail("") }}
+                        className="w-4 h-4 text-purple-600"
+                      />
+                      <span className="text-gray-900 dark:text-white font-medium">Send to All Users</span>
+                    </label>
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        checked={!sendToAll}
+                        onChange={() => setSendToAll(false)}
+                        className="w-4 h-4 text-purple-600"
+                      />
+                      <span className="text-gray-900 dark:text-white font-medium">Send to Specific User</span>
+                    </label>
                   </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+
+                  {/* Recipient Selection */}
+                  {!sendToAll && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                        Select Recipient
+                      </label>
+                      <select
+                        value={recipientEmail}
+                        onChange={(e) => setRecipientEmail(e.target.value)}
+                        className="w-full p-3 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-md text-gray-900 dark:text-white font-medium"
+                      >
+                        <option value="" className="text-gray-500">-- Select a user --</option>
+                        {users.map((user) => (
+                          <option key={user.id} value={user.email} className="py-2">
+                            {user.name || 'No Name'} | {user.email} | {user.role} | {user.department || 'No Dept'}
+                            {user.emailVerified ? ' ✓' : ' ✗'}
+                          </option>
+                        ))}
+                      </select>
+                      
+                      {recipientEmail && (
+                        <div className="mt-2 p-3 bg-purple-50 dark:bg-purple-900/20 border-2 border-purple-200 dark:border-purple-800 rounded-md">
+                          <p className="text-sm text-purple-800 dark:text-purple-200">
+                            <strong>Selected:</strong> {users.find(u => u.email === recipientEmail)?.name || recipientEmail}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                      Subject
+                    </label>
+                    <Input
+                      value={notificationSubject}
+                      onChange={(e) => setNotificationSubject(e.target.value)}
+                      placeholder="Enter email subject..."
+                      className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                      Message
+                    </label>
+                    <Textarea
+                      value={notificationMessage}
+                      onChange={(e) => setNotificationMessage(e.target.value)}
+                      placeholder="Enter your message..."
+                      rows={6}
+                      className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  
+                  {users.length > 0 && (
+                    <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-md">
+                      <p className="text-sm text-blue-800 dark:text-blue-200">
+                        <strong>Total Users in Database:</strong> {users.length}
+                        {sendToAll && <span className="ml-2">(All will receive this email)</span>}
+                      </p>
+                    </div>
+                  )}
+
+                  <Button
+                    onClick={handleSendNotification}
+                    disabled={isLoading}
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    {sendToAll ? "Send to All Users" : "Send to Selected User"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </main>
     </div>
   )
 }
+
+
+

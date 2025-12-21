@@ -45,6 +45,7 @@ model User {
   image         String?
   password      String?   // For credentials login
   role          Role      @default(STUDENT)
+  department    String?   // For coordinators and staff
   college       String?
   phoneNumber   String?
   createdAt     DateTime  @default(now())
@@ -81,6 +82,22 @@ model PasswordResetOTP {
 
   @@index([email])
   @@map("password_reset_otps")
+}
+
+model CoordinatorRequest {
+  id          String              @id @default(cuid())
+  name        String
+  email       String              @unique
+  department  String
+  phoneNumber String?
+  message     String
+  status      CoordinatorRequestStatus @default(PENDING)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  reviewedAt  DateTime?
+  reviewedBy  String?
+
+  @@map("coordinator_requests")
 }
 
 model LostItem {
@@ -158,6 +175,7 @@ model Notification {
 enum Role {
   STUDENT
   STAFF
+  COORDINATOR
   ADMIN
 }
 
@@ -279,6 +297,12 @@ enum BookType {
 }
 
 enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum CoordinatorRequestStatus {
   PENDING
   APPROVED
   REJECTED
