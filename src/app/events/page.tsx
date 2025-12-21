@@ -21,24 +21,22 @@ interface Event {
   id: string
   title: string
   description: string
-  category: string
   date: string
   time: string
-  location: string
-  maxParticipants?: number
-  club?: string | null
-  department?: string | null
+  venue: string
+  clubOrDept: string
+  contactInfo?: string | null
+  imageUrl?: string | null
   createdAt: string
-  organizer: {
+  postedBy: {
     id: string
-    name: string
+    name: string | null
     email: string
-    image?: string
+    role: string
   }
   _count: {
-    interests: number
+    interested: number
   }
-  isInterestedByUser?: boolean
 }
 
 const EVENT_CATEGORIES = [
@@ -64,53 +62,34 @@ export default function EventsPage() {
 
   useEffect(() => {
     fetchEvents()
-  }, [searchTerm, selectedClub, selectedDepartment, selectedCategory, filterUpcoming])
+  }, [searchTerm, selectedClub, selectedDepartment, filterUpcoming])
 
   const fetchEvents = async () => {
-    // Simulate API loading delay for demo purposes
     setLoading(true)
-    setTimeout(() => {
-      filterEvents()
+    try {
+      // Build query params
+      const params = new URLSearchParams()
+      if (searchTerm) params.append('search', searchTerm)
+      if (selectedClub && selectedClub !== 'all') params.append('clubOrDept', selectedClub)
+      if (selectedDepartment && selectedDepartment !== 'all') params.append('clubOrDept', selectedDepartment)
+      if (filterUpcoming) params.append('upcoming', 'true')
+
+      const response = await fetch(`/api/events?${params.toString()}`)
+      const data = await response.json()
+
+      if (response.ok) {
+        setEvents(data.events || [])
+      } else {
+        toast.error('Failed to fetch events')
+        setEvents([])
+      }
+    } catch (error) {
+      console.error('Error fetching events:', error)
+      toast.error('Error loading events')
+      setEvents([])
+    } finally {
       setLoading(false)
-    }, 500)
-  }
-
-  const filterEvents = () => {
-    let filtered = [...mockEvents]
-
-    // Apply search filter
-    if (searchTerm) {
-      filtered = filtered.filter(event => 
-        event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        event.description.toLowerCase().includes(searchTerm.toLowerCase())
-      )
     }
-
-    // Apply club filter
-    if (selectedClub && selectedClub !== "all") {
-      filtered = filtered.filter(event => event.club === selectedClub)
-    }
-
-    // Apply department filter
-    if (selectedDepartment && selectedDepartment !== "all") {
-      filtered = filtered.filter(event => event.department === selectedDepartment)
-    }
-
-    // Apply category filter
-    if (selectedCategory && selectedCategory !== "all") {
-      filtered = filtered.filter(event => event.category === selectedCategory)
-    }
-
-    // Apply upcoming filter
-    if (filterUpcoming) {
-      const now = new Date()
-      filtered = filtered.filter(event => {
-        const eventDate = new Date(event.date)
-        return eventDate >= now
-      })
-    }
-
-    setEvents(filtered)
   }
 
   const handleShowInterest = async (eventId: string) => {
@@ -140,7 +119,7 @@ export default function EventsPage() {
                 isInterestedByUser: data.isInterested,
                 _count: { 
                   ...event._count, 
-                  interests: event._count.interests + (data.isInterested ? 1 : -1)
+                  interested: event._count.interested + (data.isInterested ? 1 : -1)
                 }
               }
             : event
@@ -266,8 +245,8 @@ export default function EventsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Clubs</SelectItem>
-                  {CLUBS.map((club: string) => (
-                    <SelectItem key={club} value={club}>
+                  {CLUBS.map((club: string, index: number) => (
+                    <SelectItem key={`club-${index}`} value={club}>
                       {club}
                     </SelectItem>
                   ))}
@@ -280,8 +259,8 @@ export default function EventsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Departments</SelectItem>
-                  {DEPARTMENTS.map((dept: string) => (
-                    <SelectItem key={dept} value={dept}>
+                  {DEPARTMENTS.map((dept: string, index: number) => (
+                    <SelectItem key={`dept-${index}`} value={dept}>
                       {dept}
                     </SelectItem>
                   ))}
@@ -330,7 +309,6 @@ export default function EventsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {events.map((event, index) => {
               const isPassed = isEventPassed(event.date, event.time)
-              const categoryInfo = EVENT_CATEGORIES.find(cat => cat.value === selectedCategory) || EVENT_CATEGORIES[EVENT_CATEGORIES.length - 1]
               
               return (
                 <motion.div
@@ -339,18 +317,31 @@ export default function EventsPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <Card className={`h-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 ${isPassed ? 'opacity-75' : ''}`}>
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between mb-2">
-                        <Badge className={categoryInfo.color}>
-                          {categoryInfo.label}
-                        </Badge>
+                  <Card className={`h-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden ${isPassed ? 'opacity-75' : ''}`}>
+                    {/* Event Image */}
+                    {event.imageUrl && (
+                      <div className="relative h-48 w-full overflow-hidden">
+                        <img 
+                          src={event.imageUrl} 
+                          alt={event.title}
+                          className="w-full h-full object-cover"
+                        />
                         {isPassed && (
-                          <Badge variant="secondary">Past Event</Badge>
+                          <div className="absolute top-2 right-2">
+                            <Badge variant="secondary" className="bg-gray-800/80 text-white">
+                              Past Event
+                            </Badge>
+                          </div>
                         )}
                       </div>
+                    )}
+                    
+                    <CardHeader className="pb-3">
+                      {!event.imageUrl && isPassed && (
+                        <Badge variant="secondary" className="w-fit mb-2">Past Event</Badge>
+                      )}
                       
-                      <CardTitle className="text-lg font-semibold line-clamp-2 mb-2">
+                      <CardTitle className="text-xl font-bold line-clamp-2 mb-2">
                         {event.title}
                       </CardTitle>
                       
@@ -359,74 +350,50 @@ export default function EventsPage() {
                       </p>
                     </CardHeader>
                     
-                    <CardContent className="pt-0">
-                      <div className="space-y-3">
-                        {/* Date and Time */}
-                        <div className="flex items-center gap-2 text-sm">
-                          <Calendar className="w-4 h-4 text-blue-500" />
-                          <span>{formatEventDate(event.date)}</span>
-                          <Clock className="w-4 h-4 text-blue-500 ml-2" />
-                          <span>{event.time}</span>
-                        </div>
+                    <CardContent className="pt-0 space-y-3">
+                      {/* Date and Time */}
+                      <div className="flex items-center gap-2 text-sm">
+                        <Calendar className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                        <span>{formatEventDate(event.date)}</span>
+                        <Clock className="w-4 h-4 text-blue-500 ml-2 flex-shrink-0" />
+                        <span>{event.time}</span>
+                      </div>
 
-                        {/* Location */}
-                        <div className="flex items-center gap-2 text-sm">
-                          <MapPin className="w-4 h-4 text-red-500" />
-                          <span className="truncate">{event.location}</span>
-                        </div>
+                      {/* Location */}
+                      <div className="flex items-center gap-2 text-sm">
+                        <MapPin className="w-4 h-4 text-red-500 flex-shrink-0" />
+                        <span className="truncate">{event.venue}</span>
+                      </div>
 
-                        {/* Club/Department */}
-                        {(event.club || event.department) && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <div className="w-4 h-4 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full"></div>
-                            <span className="truncate">
-                              {event.club || event.department}
-                            </span>
-                          </div>
-                        )}
+                      {/* Club/Department */}
+                      <div className="flex items-center gap-2 text-sm">
+                        <div className="w-4 h-4 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex-shrink-0"></div>
+                        <span className="truncate font-medium">
+                          {event.clubOrDept}
+                        </span>
+                      </div>
 
-                        {/* Organizer */}
-                        <div className="flex items-center gap-2">
-                          <Avatar className="w-6 h-6">
-                            <AvatarImage src={event.organizer.image} />
-                            <AvatarFallback>
-                              {event.organizer.name?.charAt(0) || <User className="w-3 h-3" />}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="text-sm text-gray-600 dark:text-gray-300 truncate">
-                            by {event.organizer.name}
-                          </span>
-                        </div>
+                      {/* Organizer */}
+                      <div className="flex items-center gap-2">
+                        <Avatar className="w-6 h-6">
+                          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-500 text-white text-xs">
+                            {event.postedBy.name?.charAt(0) || <User className="w-3 h-3" />}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm text-gray-600 dark:text-gray-300 truncate">
+                          by {event.postedBy.name || 'Unknown'}
+                        </span>
+                      </div>
 
-                        {/* Participants and Actions */}
-                        <div className="flex items-center justify-between pt-2">
-                          <div className="flex items-center gap-1 text-sm text-gray-500">
-                            <Users className="w-4 h-4" />
-                            <span>{event._count.interests} interested</span>
-                            {event.maxParticipants && (
-                              <span>/ {event.maxParticipants} max</span>
-                            )}
-                          </div>
-
-                          <div className="flex gap-2">
-                            {status === "authenticated" && !isPassed && (
-                              <Button
-                                size="sm"
-                                variant={event.isInterestedByUser ? "default" : "outline"}
-                                onClick={() => handleShowInterest(event.id)}
-                                className={event.isInterestedByUser ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700" : ""}
-                              >
-                                {event.isInterestedByUser ? "Interested" : "Show Interest"}
-                              </Button>
-                            )}
-                            
-                            <Link href={`/events/${event.id}`}>
-                              <Button size="sm" variant="outline">
-                                View Details
-                              </Button>
-                            </Link>
-                          </div>
-                        </div>
+                      {/* View Details Button */}
+                      <div className="pt-2">
+                        <Link href={`/events/${event.id}`} className="block">
+                          <Button 
+                            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                          >
+                            View Details
+                          </Button>
+                        </Link>
                       </div>
                     </CardContent>
                   </Card>

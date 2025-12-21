@@ -22,6 +22,7 @@ export default function CoordinatorRequestPage() {
     name: "",
     email: "",
     department: "",
+    title: "",
     phoneNumber: "",
     message: ""
   })
@@ -194,6 +195,22 @@ export default function CoordinatorRequestPage() {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="title">
+                    <Users className="w-4 h-4 inline mr-2" />
+                    Your Role/Position *
+                  </Label>
+                  <Input
+                    id="title"
+                    type="text"
+                    required
+                    value={formData.title}
+                    onChange={(e) => setFormData({...formData, title: e.target.value})}
+                    placeholder="e.g., President, Secretary, Event Coordinator"
+                    className="h-11"
+                  />
                 </div>
 
                 <div className="space-y-2">

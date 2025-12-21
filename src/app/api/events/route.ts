@@ -68,9 +68,14 @@ export async function GET(request: NextRequest) {
             }
           }
         },
-        orderBy: {
-          date: 'asc'
-        },
+        orderBy: [
+          {
+            createdAt: 'desc'
+          },
+          {
+            date: 'asc'
+          }
+        ],
         take: limit,
         skip: offset
       }),

@@ -154,6 +154,15 @@ export default function CoordinatorSignIn() {
                   </div>
                 </div>
 
+                <div className="flex items-center justify-end">
+                  <Link 
+                    href="/auth/forgot-password" 
+                    className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline transition-colors duration-200"
+                  >
+                    Forgot Password?
+                  </Link>
+                </div>
+
                 <Button 
                   type="submit" 
                   className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 h-11 font-semibold shadow-lg" 

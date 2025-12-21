@@ -16,24 +16,22 @@ interface Event {
   id: string
   title: string
   description: string
-  category: string
   date: string
   time: string
-  location: string
-  maxParticipants?: number
-  club?: string
-  department?: string
+  venue: string
+  clubOrDept: string
+  contactInfo?: string | null
+  imageUrl?: string | null
   createdAt: string
-  organizer: {
+  postedBy: {
     id: string
-    name: string
+    name: string | null
     email: string
-    image?: string
+    role: string
   }
   _count: {
-    interests: number
+    interested: number
   }
-  isInterestedByUser?: boolean
 }
 
 interface EventInterest {
@@ -204,8 +202,7 @@ export default function EventDetailsPage() {
   }
 
   const isEventFull = () => {
-    if (!event || !event.maxParticipants) return false
-    return event._count.interests >= event.maxParticipants
+    return false // Not tracking max participants anymore
   }
 
   if (status === "loading" || loading) {
@@ -231,14 +228,15 @@ export default function EventDetailsPage() {
     )
   }
 
-  const isOrganizer = session?.user?.id === event.organizer.id
-  const categoryInfo = EVENT_CATEGORIES[event.category as keyof typeof EVENT_CATEGORIES] || EVENT_CATEGORIES.OTHER
+  const isOrganizer = session?.user?.id === event.postedBy.id
+  const isAdmin = session?.user?.role === 'ADMIN'
+  const canModify = isOrganizer || isAdmin
   const eventPassed = isEventPassed()
   const eventFull = isEventFull()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -251,7 +249,7 @@ export default function EventDetailsPage() {
           </Link>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Event Details */}
@@ -265,14 +263,8 @@ export default function EventDetailsPage() {
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex flex-wrap gap-2 mb-4">
-                        <Badge className={categoryInfo.color}>
-                          {categoryInfo.label}
-                        </Badge>
                         {eventPassed && (
                           <Badge variant="secondary">Past Event</Badge>
-                        )}
-                        {eventFull && !eventPassed && (
-                          <Badge variant="destructive">Full</Badge>
                         )}
                       </div>
 
@@ -291,14 +283,13 @@ export default function EventDetailsPage() {
                         
                         <div className="flex items-center gap-2">
                           <MapPin className="w-5 h-5 text-purple-600" />
-                          <span className="font-medium">{event.location}</span>
+                          <span className="font-medium">{event.venue}</span>
                         </div>
                         
                         <div className="flex items-center gap-2">
                           <Users className="w-5 h-5 text-purple-600" />
                           <span className="font-medium">
-                            {event._count.interests} interested
-                            {event.maxParticipants && ` / ${event.maxParticipants} max`}
+                            {event._count.interested} interested
                           </span>
                         </div>
                       </div>
@@ -313,13 +304,15 @@ export default function EventDetailsPage() {
                         <Share2 className="w-4 h-4" />
                       </Button>
                       
-                      {isOrganizer && (
+                      {canModify && (
                         <>
-                          <Link href={`/events/${eventId}/edit`}>
-                            <Button variant="outline" size="sm">
-                              <Edit3 className="w-4 h-4" />
-                            </Button>
-                          </Link>
+                          {isOrganizer && (
+                            <Link href={`/events/${eventId}/edit`}>
+                              <Button variant="outline" size="sm">
+                                <Edit3 className="w-4 h-4" />
+                              </Button>
+                            </Link>
+                          )}
                           <Button 
                             variant="outline" 
                             size="sm"
@@ -342,21 +335,17 @@ export default function EventDetailsPage() {
                       </p>
                     </div>
 
-                    {(event.club || event.department) && (
+                    <div>
+                      <h3 className="font-semibold mb-2">Organized by</h3>
+                      <Badge variant="outline" className="text-purple-600 border-purple-300">
+                        {event.clubOrDept}
+                      </Badge>
+                    </div>
+
+                    {event.contactInfo && (
                       <div>
-                        <h3 className="font-semibold mb-2">Organizers</h3>
-                        <div className="flex flex-wrap gap-2">
-                          {event.club && (
-                            <Badge variant="outline" className="text-purple-600 border-purple-300">
-                              {event.club}
-                            </Badge>
-                          )}
-                          {event.department && (
-                            <Badge variant="outline" className="text-indigo-600 border-indigo-300">
-                              {event.department}
-                            </Badge>
-                          )}
-                        </div>
+                        <h3 className="font-semibold mb-2">Contact Information</h3>
+                        <p className="text-gray-600 dark:text-gray-300">{event.contactInfo}</p>
                       </div>
                     )}
 
@@ -384,14 +373,14 @@ export default function EventDetailsPage() {
                 <CardContent>
                   <div className="flex items-center gap-3">
                     <Avatar className="w-12 h-12">
-                      <AvatarImage src={event.organizer.image} />
+                      <AvatarImage src={event.postedBy.image} />
                       <AvatarFallback>
-                        {event.organizer.name?.charAt(0) || <User className="w-6 h-6" />}
+                        {event.postedBy.name?.charAt(0) || <User className="w-6 h-6" />}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="font-medium">{event.organizer.name}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{event.organizer.email}</p>
+                      <p className="font-medium">{event.postedBy.name}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{event.postedBy.email}</p>
                     </div>
                   </div>
                 </CardContent>

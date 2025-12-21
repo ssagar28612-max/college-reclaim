@@ -34,13 +34,11 @@ export default function NewEventPage() {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    category: "",
     date: "",
     time: "",
-    location: "",
-    maxParticipants: "",
-    club: "",
-    department: ""
+    venue: "",
+    clubOrDept: "",
+    contactInfo: ""
   })
 
   // Redirect if not authenticated
@@ -68,9 +66,10 @@ export default function NewEventPage() {
 
     try {
       // Validate form
-      if (!formData.title || !formData.description || !formData.category || 
-          !formData.date || !formData.time || !formData.location) {
+      if (!formData.title || !formData.description || 
+          !formData.date || !formData.time || !formData.venue || !formData.clubOrDept) {
         toast.error("Please fill in all required fields")
+        setLoading(false)
         return
       }
 
@@ -78,25 +77,18 @@ export default function NewEventPage() {
       const eventDateTime = new Date(`${formData.date}T${formData.time}`)
       if (eventDateTime <= new Date()) {
         toast.error("Event date and time must be in the future")
-        return
-      }
-
-      const maxParticipants = formData.maxParticipants ? parseInt(formData.maxParticipants) : undefined
-      if (maxParticipants && (isNaN(maxParticipants) || maxParticipants < 1)) {
-        toast.error("Maximum participants must be a positive number")
+        setLoading(false)
         return
       }
 
       const eventData = {
         title: formData.title.trim(),
         description: formData.description.trim(),
-        category: formData.category,
         date: formData.date,
         time: formData.time,
-        location: formData.location.trim(),
-        maxParticipants,
-        club: formData.club && formData.club !== "none" ? formData.club : undefined,
-        department: formData.department && formData.department !== "none" ? formData.department : undefined
+        venue: formData.venue.trim(),
+        clubOrDept: formData.clubOrDept,
+        contactInfo: formData.contactInfo.trim() || undefined
       }
 
       const response = await fetch('/api/events', {
@@ -197,37 +189,6 @@ export default function NewEventPage() {
 
                 {/* Category and Max Participants Row */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="category">Category *</Label>
-                    <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {EVENT_CATEGORIES.map(category => (
-                          <SelectItem key={category.value} value={category.value}>
-                            {category.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="maxParticipants">Max Participants</Label>
-                    <div className="relative">
-                      <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="maxParticipants"
-                        type="number"
-                        min="1"
-                        placeholder="No limit"
-                        className="pl-10"
-                        value={formData.maxParticipants}
-                        onChange={(e) => handleInputChange('maxParticipants', e.target.value)}
-                      />
-                    </div>
-                  </div>
                 </div>
 
                 {/* Date and Time Row */}
@@ -260,57 +221,53 @@ export default function NewEventPage() {
                   </div>
                 </div>
 
-                {/* Location */}
+                {/* Venue */}
                 <div className="space-y-2">
-                  <Label htmlFor="location">Location *</Label>
+                  <Label htmlFor="venue">Venue *</Label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input
-                      id="location"
+                      id="venue"
                       placeholder="e.g., Main Auditorium, JSSSTU Campus"
                       className="pl-10"
-                      value={formData.location}
-                      onChange={(e) => handleInputChange('location', e.target.value)}
+                      value={formData.venue}
+                      onChange={(e) => handleInputChange('venue', e.target.value)}
                       required
                     />
                   </div>
                 </div>
 
-                {/* Club and Department Row */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="club">Organizing Club</Label>
-                    <Select value={formData.club} onValueChange={(value) => handleInputChange('club', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select club (optional)" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">No club selected</SelectItem>
-                        {CLUBS.map((club: string) => (
-                          <SelectItem key={club} value={club}>
-                            {club}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                {/* Club/Department */}
+                <div className="space-y-2">
+                  <Label htmlFor="clubOrDept">Organizing Club / Department *</Label>
+                  <Select value={formData.clubOrDept} onValueChange={(value) => handleInputChange('clubOrDept', value)} required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select club or department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CLUBS.map((club: string, index: number) => (
+                        <SelectItem key={`club-${club}-${index}`} value={club}>
+                          {club}
+                        </SelectItem>
+                      ))}
+                      {DEPARTMENTS.map((dept: string, index: number) => (
+                        <SelectItem key={`dept-${dept}-${index}`} value={dept}>
+                          {dept}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="department">Department</Label>
-                    <Select value={formData.department} onValueChange={(value) => handleInputChange('department', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select department (optional)" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">No department selected</SelectItem>
-                        {DEPARTMENTS.map((dept: string) => (
-                          <SelectItem key={dept} value={dept}>
-                            {dept}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                {/* Contact Info */}
+                <div className="space-y-2">
+                  <Label htmlFor="contactInfo">Contact Information</Label>
+                  <Input
+                    id="contactInfo"
+                    placeholder="e.g., contact@example.com or +91 1234567890"
+                    value={formData.contactInfo}
+                    onChange={(e) => handleInputChange('contactInfo', e.target.value)}
+                  />
                 </div>
 
                 {/* Submit Buttons */}

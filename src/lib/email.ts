@@ -12,6 +12,11 @@ const createTransporter = () => {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
+    pool: true, // Use connection pooling
+    maxConnections: 1, // Limit connections to avoid rate limits
+    maxMessages: 3, // Max messages per connection
+    rateDelta: 1000, // 1 second between messages
+    rateLimit: 1, // Max 1 message per rateDelta
   })
 }
 

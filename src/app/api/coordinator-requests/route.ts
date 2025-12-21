@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, department, phoneNumber, message } = body;
+    const { name, email, department, title, phoneNumber, message } = body;
 
     if (!name || !email || !department || !message) {
       return NextResponse.json(
@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
         name,
         email,
         department,
+        title: title || null,
         phoneNumber: phoneNumber || null,
         message,
       },

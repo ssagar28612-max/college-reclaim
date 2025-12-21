@@ -46,6 +46,7 @@ model User {
   password      String?   // For credentials login
   role          Role      @default(STUDENT)
   department    String?   // For coordinators and staff
+  coordinatorTitle String? // Role/position (e.g., President, Secretary)
   college       String?
   phoneNumber   String?
   createdAt     DateTime  @default(now())
@@ -89,6 +90,7 @@ model CoordinatorRequest {
   name        String
   email       String              @unique
   department  String
+  title       String?             // Role/position in club/department
   phoneNumber String?
   message     String
   status      CoordinatorRequestStatus @default(PENDING)

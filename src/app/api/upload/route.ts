@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
-import { put } from '@vercel/blob'
+import { writeFile, mkdir } from 'fs/promises'
+import path from 'path'
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg']
 
 export async function POST(req: NextRequest) {
   try {
@@ -43,14 +44,31 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Upload to Vercel Blob
-    const blob = await put(file.name, file, {
-      access: 'public',
-    })
+    // Generate unique filename
+    const timestamp = Date.now()
+    const randomString = Math.random().toString(36).substring(7)
+    const ext = file.name.split('.').pop()
+    const filename = `${timestamp}-${randomString}.${ext}`
+
+    // Create uploads directory if it doesn't exist
+    const uploadsDir = path.join(process.cwd(), 'public', 'uploads')
+    try {
+      await mkdir(uploadsDir, { recursive: true })
+    } catch (error) {
+      // Directory might already exist
+    }
+
+    // Convert file to buffer and save
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+    const filepath = path.join(uploadsDir, filename)
+    await writeFile(filepath, buffer)
+
+    const url = `/uploads/${filename}`
 
     return NextResponse.json({
       message: 'File uploaded successfully',
-      url: blob.url,
+      url,
       filename: file.name,
       size: file.size,
       type: file.type

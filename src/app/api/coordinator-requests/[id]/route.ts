@@ -61,28 +61,39 @@ export async function POST(
         where: { email: coordinatorRequest.email },
       });
 
-      // Generate random password
-      const randomPassword = Math.random().toString(36).slice(-8) + "Co@" + Math.random().toString(36).slice(-4);
-      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+      // Generate password reset OTP for setting up account
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const otpHash = await bcrypt.hash(otp, 10);
+
+      // Store OTP in database (expires in 24 hours)
+      await prisma.passwordResetOTP.create({
+        data: {
+          email: coordinatorRequest.email,
+          otpHash,
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+        },
+      });
 
       if (existingUser) {
-        // Update existing user to coordinator
+        // Update existing user to coordinator (without password)
         await prisma.user.update({
           where: { email: coordinatorRequest.email },
           data: {
             role: "COORDINATOR",
             department: coordinatorRequest.department,
+            coordinatorTitle: coordinatorRequest.title,
           },
         });
       } else {
-        // Create new coordinator user
+        // Create new coordinator user without password
         await prisma.user.create({
           data: {
             email: coordinatorRequest.email,
             name: coordinatorRequest.name,
-            password: hashedPassword,
+            password: null, // They will set it via reset link
             role: "COORDINATOR",
             department: coordinatorRequest.department,
+            coordinatorTitle: coordinatorRequest.title,
             phoneNumber: coordinatorRequest.phoneNumber,
             emailVerified: new Date(),
           },
@@ -99,11 +110,11 @@ export async function POST(
         },
       });
 
-      // Send approval email
+      // Send approval email with setup link
       try {
         await sendEmail({
         to: coordinatorRequest.email,
-        subject: "Coordinator Access Approved - College Reclaim",
+        subject: "Coordinator Access Approved - Set Your Password",
         html: `
           <!DOCTYPE html>
           <html>
@@ -113,40 +124,52 @@ export async function POST(
                 .container { max-width: 600px; margin: 0 auto; padding: 20px; }
                 .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center; }
                 .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
-                .credentials { background: white; padding: 20px; border-radius: 5px; border-left: 4px solid #10b981; margin: 20px 0; }
+                .otp-box { background: white; padding: 20px; border-radius: 5px; border: 2px dashed #10b981; margin: 20px 0; text-align: center; }
+                .otp-code { font-size: 32px; font-weight: bold; color: #10b981; letter-spacing: 5px; margin: 10px 0; }
                 .button { display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%); color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin-top: 20px; }
                 .warning { background: #fef3c7; padding: 15px; border-radius: 5px; border-left: 4px solid #f59e0b; margin: 20px 0; }
+                .info { background: #dbeafe; padding: 15px; border-radius: 5px; border-left: 4px solid #3b82f6; margin: 20px 0; }
               </style>
             </head>
             <body>
               <div class="container">
                 <div class="header">
-                  <h1>✅ Coordinator Access Approved!</h1>
+                  <h1>🎉 Coordinator Access Approved!</h1>
                 </div>
                 <div class="content">
                   <p>Dear ${coordinatorRequest.name},</p>
-                  <p>Congratulations! Your coordinator access request has been approved.</p>
+                  <p>Congratulations! Your coordinator access request for <strong>${coordinatorRequest.department}</strong> has been approved.</p>
                   
-                  <div class="credentials">
-                    <h3>Your Login Credentials:</h3>
-                    <p><strong>Email:</strong> ${coordinatorRequest.email}</p>
-                    <p><strong>Temporary Password:</strong> ${randomPassword}</p>
-                  </div>
-
                   <div class="warning">
-                    <strong>⚠️ Important:</strong> Please change your password after your first login for security.
+                    <strong>⚠️ Action Required:</strong> You need to set up your password before you can sign in.
                   </div>
 
-                  <p><strong>Your Access Includes:</strong></p>
+                  <div class="otp-box">
+                    <p style="margin: 0; color: #6b7280;">Your Setup Code:</p>
+                    <div class="otp-code">${otp}</div>
+                    <p style="margin: 0; font-size: 12px; color: #6b7280;">Valid for 24 hours</p>
+                  </div>
+
+                  <div class="info">
+                    <strong>📝 Steps to Set Up Your Account:</strong>
+                    <ol style="margin: 10px 0;">
+                      <li>Click the button below to go to the password setup page</li>
+                      <li>Enter your email: <strong>${coordinatorRequest.email}</strong></li>
+                      <li>Enter the 6-digit code shown above</li>
+                      <li>Create your new password</li>
+                    </ol>
+                  </div>
+
+                  <p style="text-align: center;">
+                    <a href="${process.env.NEXTAUTH_URL}/auth/forgot-password" class="button">Set Up Password</a>
+                  </p>
+
+                  <p><strong>Your Coordinator Access Includes:</strong></p>
                   <ul>
                     <li>✅ Create and manage events for ${coordinatorRequest.department}</li>
                     <li>✅ Access to coordinator dashboard</li>
                     <li>✅ View event analytics and interest metrics</li>
                   </ul>
-
-                  <p style="text-align: center;">
-                    <a href="${process.env.NEXTAUTH_URL}/auth/coordinator-signin" class="button">Sign In Now</a>
-                  </p>
 
                   <p style="margin-top: 30px;">Best regards,<br>College Reclaim Team</p>
                 </div>
@@ -161,7 +184,7 @@ export async function POST(
       }
 
       return NextResponse.json(
-        { message: "Request approved and credentials sent" },
+        { message: "Request approved and password setup link sent" },
         { status: 200 }
       );
     } else {
