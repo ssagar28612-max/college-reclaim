@@ -277,6 +277,24 @@ export function Navbar() {
             className="md:hidden border-t dark:border-gray-700 py-4"
           >
             <div className="flex flex-col space-y-3">
+              {/* Show Sign In/Sign Up at top for unauthenticated users */}
+              {!session && (
+                <>
+                  <Link href="/auth/signin" prefetch={true} onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start dark:text-gray-300 dark:hover:text-gray-100">
+                      <User className="h-4 w-4 mr-2" />
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link href="/auth/signup" prefetch={true} onClick={() => setMobileMenuOpen(false)}>
+                    <Button className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white">
+                      Sign Up
+                    </Button>
+                  </Link>
+                  <div className="border-t dark:border-gray-700 pt-3 mt-2"></div>
+                </>
+              )}
+
               <Link href="/search" prefetch={true} onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="ghost" className="w-full justify-start dark:text-gray-300">
                   <Search className="h-4 w-4 mr-2" />
@@ -298,7 +316,7 @@ export function Navbar() {
                 </Button>
               </Link>
 
-              {session ? (
+              {session && (
                 <>
                   <div className="border-t dark:border-gray-700 pt-3 mt-2"></div>
                   <Link href="/report/lost" prefetch={true} onClick={() => setMobileMenuOpen(false)}>
@@ -342,20 +360,6 @@ export function Navbar() {
                     <LogOut className="h-4 w-4 mr-2" />
                     Log out
                   </Button>
-                </>
-              ) : (
-                <>
-                  <div className="border-t dark:border-gray-700 pt-3 mt-2"></div>
-                  <Link href="/auth/signin" prefetch={true} onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="ghost" className="w-full justify-start dark:text-gray-300">
-                      Sign In
-                    </Button>
-                  </Link>
-                  <Link href="/auth/signup" prefetch={true} onClick={() => setMobileMenuOpen(false)}>
-                    <Button className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white">
-                      Sign Up
-                    </Button>
-                  </Link>
                 </>
               )}
             </div>
