@@ -74,24 +74,17 @@ export function Footer() {
             </div>
           </motion.div>
         </div>
-        <motion.div 
-          className="border-t mt-8 pt-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-        >
-          <div className="text-center mb-6">
-            <button
-              onClick={() => setIsCoffeeModalOpen(true)}
-              style={{ display: 'inline-flex' }}
-              className="items-center space-x-2 px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-full shadow-lg"
-            >
-              ☕ Support the Developer
-            </button>
-          </div>
+        <div className="border-t mt-8 pt-8 text-center">
+          <button
+            onClick={() => setIsCoffeeModalOpen(true)}
+            className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 mb-6"
+          >
+            <Coffee className="w-5 h-5" />
+            <span>Support the Developer ☕</span>
+          </button>
 
-          <p className="text-gray-600 dark:text-gray-400 transition-colors duration-300 text-center">&copy; 2025 College Reclaim. Made with ❤️ by Surya.</p>
-        </motion.div>
+          <p className="text-gray-600 dark:text-gray-400 transition-colors duration-300">&copy; 2025 College Reclaim. Made with ❤️ by Surya.</p>
+        </div>
       </div>
 
       {/* Coffee Modal */}

@@ -141,15 +141,17 @@ export function Navbar() {
                   </motion.div>
                 </Link>
 
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Button variant="ghost" size="sm" className="relative hover:bg-violet-50 dark:hover:bg-gray-800 hover:text-violet-700 dark:hover:text-violet-400 transition-all duration-200 dark:text-gray-300">
-                    <Bell className="h-4 w-4" />
-                    <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full animate-pulse"></span>
-                  </Button>
-                </motion.div>
+                <Link href="/notifications" prefetch={true}>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Button variant="ghost" size="sm" className="relative hover:bg-violet-50 dark:hover:bg-gray-800 hover:text-violet-700 dark:hover:text-violet-400 transition-all duration-200 dark:text-gray-300">
+                      <Bell className="h-4 w-4" />
+                      <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full animate-pulse"></span>
+                    </Button>
+                  </motion.div>
+                </Link>
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
