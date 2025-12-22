@@ -21,11 +21,23 @@ export const metadata: Metadata = {
   keywords: "college, lost and found, campus, student services, lost items, found items, university",
   authors: [{ name: "College Reclaim Team" }],
   robots: "index, follow",
+  icons: {
+    icon: "/logo.webp",
+    apple: "/logo.webp",
+  },
   openGraph: {
     title: "College Reclaim - Lost & Found Platform",
     description: "Help your campus community recover lost items with our comprehensive lost and found platform.",
     type: "website",
     locale: "en_US",
+    images: [
+      {
+        url: "/logo.webp",
+        width: 800,
+        height: 600,
+        alt: "College Reclaim Logo",
+      },
+    ],
   },
 };
 

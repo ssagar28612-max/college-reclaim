@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -388,8 +389,13 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 1.6 }}
             >
               <div className="flex items-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                  <Sparkles className="text-white w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <div className="relative w-7 h-7 sm:w-8 sm:h-8 rounded-lg overflow-hidden">
+                  <Image 
+                    src="/logo.webp" 
+                    alt="College Reclaim Logo" 
+                    fill
+                    className="object-contain"
+                  />
                 </div>
                 <span className="font-bold text-base sm:text-lg bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">College Reclaim</span>
               </div>

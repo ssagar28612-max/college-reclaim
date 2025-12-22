@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { useSession, signOut } from "next-auth/react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -34,11 +35,17 @@ export function Navbar() {
           >
             <Link href="/" className="flex items-center space-x-2 group" prefetch={true}>
               <motion.div 
-                className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-md"
-                whileHover={{ scale: 1.05, rotate: 5 }}
+                className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-xl shadow-md overflow-hidden"
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Sparkles className="text-white w-4 h-4 sm:w-5 sm:h-5" />
+                <Image 
+                  src="/logo.webp" 
+                  alt="College Reclaim Logo" 
+                  fill
+                  className="object-contain"
+                  priority
+                />
               </motion.div>
               <span className="font-bold text-base sm:text-xl bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent hidden xs:inline">
                 College Reclaim
