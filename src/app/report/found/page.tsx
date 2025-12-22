@@ -1,6 +1,8 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,6 +16,7 @@ import { BackButton } from "@/components/ui/back-button"
 import { CheckCircle, MapPin, Upload, X } from "lucide-react"
 import { toast } from "sonner"
 import { locations } from "@/data/locations"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const categories = [
   { value: "ELECTRONICS", label: "Electronics", icon: "📱" },
@@ -28,6 +31,8 @@ const categories = [
 ]
 
 export default function ReportFound() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -40,6 +45,41 @@ export default function ReportFound() {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      toast.error("Please sign in to report a found item")
+      router.push("/auth/signin")
+    }
+  }, [status, router])
+
+  // Show loading state
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8 max-w-4xl">
+          <Skeleton className="h-6 w-32 mb-6" />
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-8 w-48" />
+              <Skeleton className="h-4 w-64" />
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  if (status === "unauthenticated") {
+    return null
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
