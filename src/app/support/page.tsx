@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, Send, HelpCircle, Instagram, CheckCircle } from "lucide-react";
+import { Mail, Send, HelpCircle, Instagram, CheckCircle, Coffee } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { BackButton } from "@/components/ui/back-button";
 import { Footer } from "@/components/footer";
+import { CoffeeModal } from "@/components/coffee-modal";
+import { toast } from "sonner";
 
 export default function SupportPage() {
   const [formData, setFormData] = useState({
@@ -20,6 +22,7 @@ export default function SupportPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [showCoffeeModal, setShowCoffeeModal] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,10 +40,14 @@ export default function SupportPage() {
       if (response.ok) {
         setSubmitted(true);
         setFormData({ name: "", email: "", subject: "", message: "" });
+        toast.success("Message sent successfully!");
         setTimeout(() => setSubmitted(false), 5000);
+      } else {
+        toast.error("Failed to send message. Please try again.");
       }
     } catch (error) {
       console.error("Error submitting form:", error);
+      toast.error("An error occurred. Please try again later.");
     } finally {
       setIsSubmitting(false);
     }
@@ -48,34 +55,34 @@ export default function SupportPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <BackButton />
         
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
+          className="text-center mb-8 sm:mb-12"
         >
           <div className="flex justify-center mb-4">
             <div className="w-16 h-16 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-2xl flex items-center justify-center">
               <HelpCircle className="text-white w-8 h-8" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent mb-4">
+          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent mb-4">
             Help Center
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto text-sm sm:text-base">
             We're here to help! Reach out to us with any questions, concerns, or feedback.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
           {/* Contact Form */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8"
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 sm:p-8"
           >
             <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">
               Send us a Message
@@ -176,7 +183,38 @@ export default function SupportPage() {
             transition={{ delay: 0.4 }}
             className="space-y-6"
           >
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
+            {/* Buy Me a Coffee Card - Prominently displayed */}
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              className="bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 rounded-2xl shadow-lg p-6 sm:p-8 text-white cursor-pointer"
+              onClick={() => setShowCoffeeModal(true)}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                    <Coffee className="text-white w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg sm:text-xl">Support Our Work</h3>
+                    <p className="text-sm text-amber-100">Buy me a coffee ☕</p>
+                  </div>
+                </div>
+              </div>
+              <p className="text-white/90 text-sm sm:text-base mb-4">
+                Enjoying College Reclaim? Support the development and help us keep the platform free for everyone!
+              </p>
+              <Button
+                variant="secondary"
+                className="w-full bg-white text-amber-600 hover:bg-amber-50 font-semibold shadow-md"
+                onClick={() => setShowCoffeeModal(true)}
+              >
+                <Coffee className="mr-2 h-4 w-4" />
+                Donate Now
+              </Button>
+            </motion.div>
+
+            {/* Contact Info Card */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 sm:p-8">
               <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">
                 Contact Information
               </h2>
@@ -252,6 +290,10 @@ export default function SupportPage() {
           </motion.div>
         </div>
       </div>
+      
+      {/* Coffee Modal */}
+      <CoffeeModal isOpen={showCoffeeModal} onClose={() => setShowCoffeeModal(false)} />
+      
       <Footer />
     </div>
   );

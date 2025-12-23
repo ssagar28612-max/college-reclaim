@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -15,6 +15,23 @@ import { Navbar } from "@/components/navbar"
 import { BackButton } from "@/components/ui/back-button"
 import { ArrowLeft, Search as SearchIcon, Filter, MapPin, Calendar, User, Heart, Eye, ExternalLink, Sparkles } from "lucide-react"
 import { toast } from "sonner"
+
+// Debounce hook for search input
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value)
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value)
+    }, delay)
+
+    return () => {
+      clearTimeout(handler)
+    }
+  }, [value, delay])
+
+  return debouncedValue
+}
 
 const categories = [
   { value: "ALL", label: "All Categories", icon: "📦" },
@@ -31,9 +48,10 @@ const categories = [
 
 export default function Search() {
   const [searchQuery, setSearchQuery] = useState("")
+  const debouncedSearchQuery = useDebounce(searchQuery, 300) // 300ms debounce delay
   const [categoryFilter, setCategoryFilter] = useState("ALL")
   const [typeFilter, setTypeFilter] = useState("ALL")
-  const [statusFilter, setStatusFilter] = useState("ALL")
+  const [statusFilter, setStatusFilter] = useState("ACTIVE") // Default to active items
   const [sortBy, setSortBy] = useState("date")
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("grid")
@@ -52,18 +70,20 @@ export default function Search() {
 
         if (lostResponse.ok) {
           const lostData = await lostResponse.json()
-          console.log('Lost items with images:', lostData.items.filter((item: any) => item.imageUrl))
           setLostItems(lostData.items || [])
+        } else {
+          toast.error('Failed to load lost items')
         }
 
         if (foundResponse.ok) {
           const foundData = await foundResponse.json()
-          console.log('Found items with images:', foundData.items.filter((item: any) => item.imageUrl))
           setFoundItems(foundData.items || [])
+        } else {
+          toast.error('Failed to load found items')
         }
       } catch (error) {
         console.error('Error fetching items:', error)
-        toast.error('Failed to load items')
+        toast.error('Failed to load items. Please try again.')
       } finally {
         setIsLoading(false)
       }
@@ -116,18 +136,27 @@ export default function Search() {
     return combined
   }, [lostItems, foundItems])
 
-  // Memoized filtered items for better performance
+  // Memoized filtered items with improved filter logic
   const filteredItems = useMemo(() => {
     const filtered = allItems.filter(item => {
-      const matchesQuery = searchQuery === '' || 
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.location.toLowerCase().includes(searchQuery.toLowerCase())
+      // Search query filter (case-insensitive, trim whitespace)
+      const query = debouncedSearchQuery.trim().toLowerCase()
+      const matchesQuery = query === '' || 
+        item.title.toLowerCase().includes(query) ||
+        item.description.toLowerCase().includes(query) ||
+        item.location.toLowerCase().includes(query) ||
+        item.category.toLowerCase().includes(query)
       
+      // Category filter (strict match)
       const matchesCategory = categoryFilter === 'ALL' || item.category === categoryFilter
+      
+      // Type filter (strict match)
       const matchesType = typeFilter === 'ALL' || item.type === typeFilter
+      
+      // Status filter (strict match)
       const matchesStatus = statusFilter === 'ALL' || item.status === statusFilter
       
+      // All filters must match (AND logic)
       return matchesQuery && matchesCategory && matchesType && matchesStatus
     }).sort((a, b) => {
       switch (sortBy) {
@@ -143,7 +172,7 @@ export default function Search() {
     })
 
     return filtered
-  }, [searchQuery, categoryFilter, typeFilter, statusFilter, sortBy, allItems])
+  }, [debouncedSearchQuery, categoryFilter, typeFilter, statusFilter, sortBy, allItems])
 
   const handleSearch = () => {
     toast.success(`Found ${filteredItems.length} items matching your criteria`)

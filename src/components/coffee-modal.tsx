@@ -20,7 +20,6 @@ const UPI_DETAILS = {
 
 export function CoffeeModal({ isOpen, onClose }: CoffeeModalProps) {
   const [isMobile, setIsMobile] = useState(false)
-  const [qrCodeUrl, setQrCodeUrl] = useState("")
 
   // Detect mobile device
   useEffect(() => {
@@ -34,14 +33,6 @@ export function CoffeeModal({ isOpen, onClose }: CoffeeModalProps) {
 
   // Generate UPI payment link
   const upiLink = `upi://pay?pa=${UPI_DETAILS.upiId}&pn=${encodeURIComponent(UPI_DETAILS.name)}&am=${UPI_DETAILS.amount}&cu=${UPI_DETAILS.currency}&tn=${encodeURIComponent(UPI_DETAILS.note)}`
-
-  // Generate QR code using Google Charts API
-  useEffect(() => {
-    if (isOpen) {
-      const qrUrl = `https://chart.googleapis.com/chart?cht=qr&chl=${encodeURIComponent(upiLink)}&chs=250x250&choe=UTF-8`
-      setQrCodeUrl(qrUrl)
-    }
-  }, [isOpen, upiLink])
 
   const handlePayment = () => {
     // On mobile, directly open UPI app
@@ -153,15 +144,13 @@ export function CoffeeModal({ isOpen, onClose }: CoffeeModalProps) {
                   <span className="font-medium">Scan with any UPI app</span>
                 </div>
                 
-                {qrCodeUrl && (
-                  <div className="flex justify-center p-4 bg-white rounded-xl border-2 border-gray-200 dark:border-gray-700">
-                    <img
-                      src={qrCodeUrl}
-                      alt="UPI QR Code"
-                      className="w-64 h-64"
-                    />
-                  </div>
-                )}
+                <div className="flex justify-center p-4 bg-white rounded-xl border-2 border-gray-200 dark:border-gray-700">
+                  <img
+                    src="/upi-qr.jpeg"
+                    alt="UPI QR Code"
+                    className="w-64 h-64 object-contain rounded-lg"
+                  />
+                </div>
 
                 <div className="text-center space-y-2">
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300">

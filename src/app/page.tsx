@@ -6,7 +6,10 @@ import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Navbar } from "@/components/navbar"
-import { ArrowRight, Sparkles, Users, TrendingUp, Shield, Trophy, BookOpen, CalendarDays } from "lucide-react"
+import { ArrowRight, Sparkles, Users, TrendingUp, Shield, Trophy, BookOpen, CalendarDays, FileText, CheckCircle, Search, Coffee } from "lucide-react"
+import { useSession } from "next-auth/react"
+import { CoffeeModal } from "@/components/coffee-modal"
+import { useState } from "react"
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
@@ -23,6 +26,9 @@ const stagger = {
 }
 
 export default function Home() {
+  const { data: session } = useSession()
+  const [showCoffeeModal, setShowCoffeeModal] = useState(false)
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-indigo-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden transition-colors duration-300">
       {/* Animated Background Elements */}
@@ -79,7 +85,8 @@ export default function Home() {
                   className="w-full sm:w-auto text-white bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base"
                   aria-label="Report a lost item"
                 >
-                  📋 Report Lost Item
+                  <FileText className="mr-2 h-4 w-4" aria-hidden="true" />
+                  Report Lost Item
                   <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
                 </Button>
               </motion.div>
@@ -93,10 +100,11 @@ export default function Home() {
                 <Button 
                   variant="outline" 
                   size="lg" 
-                  className="w-full sm:w-auto border-2 border-emerald-500 dark:border-emerald-400 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:border-emerald-600 dark:hover:border-emerald-300 shadow-md hover:shadow-lg transition-all duration-300 font-semibold px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base"
+                  className="w-full sm:w-auto border-2 border-emerald-500 dark:border-emerald-400 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:border-emerald-600 dark:hover:border-emerald-300 shadow-md hover:shadow-lg transition-all duration-300 font-semibold px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base bg-white dark:bg-transparent"
                   aria-label="Report a found item"
                 >
-                  ✅ Report Found Item
+                  <CheckCircle className="mr-2 h-4 w-4" aria-hidden="true" />
+                  Report Found Item
                   <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
                 </Button>
               </motion.div>
@@ -110,10 +118,11 @@ export default function Home() {
                 <Button 
                   variant="secondary" 
                   size="lg" 
-                  className="w-full sm:w-auto bg-gradient-to-r from-violet-100 to-indigo-100 hover:from-violet-200 hover:to-indigo-200 text-violet-700 shadow-md hover:shadow-lg transition-all duration-300 font-semibold px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base"
+                  className="w-full sm:w-auto bg-gradient-to-r from-violet-100 to-indigo-100 hover:from-violet-200 hover:to-indigo-200 text-violet-800 dark:text-violet-700 shadow-md hover:shadow-lg transition-all duration-300 font-semibold px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base"
                   aria-label="Browse all lost and found items"
                 >
-                  🔍 Browse All Items
+                  <Search className="mr-2 h-4 w-4" aria-hidden="true" />
+                  Browse All Items
                   <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
                 </Button>
               </motion.div>
@@ -350,17 +359,19 @@ export default function Home() {
                   Join thousands of students helping each other recover lost items every day.
                 </p>
                 <div className="flex items-center justify-center gap-3 sm:gap-4 flex-wrap px-2">
-                  <Link href="/auth/signup" prefetch={true}>
-                    <motion.div
-                      whileHover={{ scale: 1.05, y: -2 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <Button variant="secondary" size="lg" className="bg-white text-violet-700 hover:bg-gray-50 shadow-lg font-semibold text-sm sm:text-base px-4 sm:px-6">
-                        Create Account
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </motion.div>
-                  </Link>
+                  {!session && (
+                    <Link href="/auth/signup" prefetch={true}>
+                      <motion.div
+                        whileHover={{ scale: 1.05, y: -2 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Button variant="secondary" size="lg" className="bg-white text-violet-700 hover:bg-gray-50 shadow-lg font-semibold text-sm sm:text-base px-4 sm:px-6">
+                          Create Account
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </motion.div>
+                    </Link>
+                  )}
                   <Link href="/search" prefetch={true}>
                     <motion.div
                       whileHover={{ scale: 1.05, y: -2 }}
@@ -415,7 +426,9 @@ export default function Home() {
                 <div><Link href="/search" className="text-gray-600 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-200">Search Items</Link></div>
                 <div><Link href="/books" className="text-gray-600 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-200">Books Marketplace</Link></div>
                 <div><Link href="/events" className="text-gray-600 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-200">Campus Events</Link></div>
-                <div><Link href="/auth/signup" className="text-gray-600 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-200">Join Community</Link></div>
+                {!session && (
+                  <div><Link href="/auth/signup" className="text-gray-600 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-200">Join Community</Link></div>
+                )}
               </div>
             </motion.div>
             <motion.div
@@ -456,10 +469,22 @@ export default function Home() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 1.9 }}
           >
+            <motion.button
+              onClick={() => setShowCoffeeModal(true)}
+              className="inline-flex items-center space-x-2 px-6 py-3 mb-6 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Coffee className="w-5 h-5" />
+              <span>Buy Me a Coffee ☕</span>
+            </motion.button>
             <p className="text-gray-600 dark:text-gray-400 transition-colors duration-300 text-xs sm:text-sm">&copy; 2025 College Reclaim. Made with ❤️ by Surya.</p>
           </motion.div>
         </div>
       </footer>
+
+      {/* Coffee Modal */}
+      <CoffeeModal isOpen={showCoffeeModal} onClose={() => setShowCoffeeModal(false)} />
     </div>
   )
 }

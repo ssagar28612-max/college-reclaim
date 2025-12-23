@@ -5,9 +5,12 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Sparkles, Coffee } from "lucide-react";
 import { CoffeeModal } from "@/components/coffee-modal";
+import { useSession } from "next-auth/react";
 
 export function Footer() {
   const [isCoffeeModalOpen, setIsCoffeeModalOpen] = useState(false);
+  const { data: session } = useSession();
+  
   return (
     <footer className="border-t bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm relative z-10 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -39,7 +42,9 @@ export function Footer() {
               <div><Link href="/search" className="text-gray-600 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-200">Search Items</Link></div>
               <div><Link href="/books" className="text-gray-600 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-200">Books Marketplace</Link></div>
               <div><Link href="/events" className="text-gray-600 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-200">Campus Events</Link></div>
-              <div><Link href="/auth/signup" className="text-gray-600 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-200">Join Community</Link></div>
+              {!session && (
+                <div><Link href="/auth/signup" className="text-gray-600 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors duration-200">Join Community</Link></div>
+              )}
             </div>
           </motion.div>
           <motion.div

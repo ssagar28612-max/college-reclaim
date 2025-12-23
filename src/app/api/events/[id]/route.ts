@@ -8,6 +8,7 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await getServerSession(authOptions)
     const { id } = await context.params
 
     const event = await prisma.event.findUnique({
@@ -39,7 +40,26 @@ export async function GET(
       )
     }
 
-    return NextResponse.json({ event })
+    // Check if the current user is interested in this event
+    let isInterestedByUser = false
+    if (session?.user?.id) {
+      const interest = await prisma.eventInterest.findUnique({
+        where: {
+          eventId_userId: {
+            eventId: id,
+            userId: session.user.id
+          }
+        }
+      })
+      isInterestedByUser = !!interest
+    }
+
+    return NextResponse.json({ 
+      event: {
+        ...event,
+        isInterestedByUser
+      }
+    })
   } catch (error) {
     console.error('Error fetching event:', error)
     return NextResponse.json(
