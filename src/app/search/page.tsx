@@ -57,6 +57,11 @@ export default function Search() {
   const [lostItems, setLostItems] = useState<any[]>([])
   const [foundItems, setFoundItems] = useState<any[]>([])
 
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }, [])
+
   // Fetch items from API
   useEffect(() => {
     const fetchItems = async () => {
@@ -186,6 +191,19 @@ export default function Search() {
 
   const handleSaveItem = (itemId: number) => {
     toast.success("Item saved to your favorites!")
+  }
+
+  // Show loading screen while fetching items
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-violet-50 via-indigo-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden">
+        <Navbar />
+        <div className="flex flex-col items-center justify-center min-h-[80vh]">
+          <Loading size="lg" />
+          <p className="text-gray-600 dark:text-gray-400 mt-4 text-lg font-medium">Loading items...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -376,31 +394,14 @@ export default function Search() {
                         : 'border-l-4 border-l-emerald-400 bg-gradient-to-br from-emerald-50/50 to-green-50/50 dark:from-emerald-900/20 dark:to-green-900/20 dark:bg-gray-800/90 dark:border-gray-700'
                     } ${item.status === 'RESOLVED' ? 'opacity-60' : ''} relative overflow-hidden`}>
                       
-                      {/* Status indicators */}
-                      <div className="absolute top-3 right-3 flex gap-2 z-10">
-                        {item.verified && <Badge variant="secondary" className="text-xs bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">✓</Badge>}
-                      </div>
-
                       <CardHeader className="pb-3">
                         <div className="flex justify-between items-start mb-2">
-                          <CardTitle className="text-lg leading-tight pr-20 dark:text-gray-100">{item.title}</CardTitle>
+                          <CardTitle className="text-lg leading-tight dark:text-gray-100">{item.title}</CardTitle>
                         </div>
                         <div className="flex items-center justify-between">
                           <Badge variant={item.type === 'lost' ? 'destructive' : 'secondary'} className="font-medium">
                             {item.type === 'lost' ? '❌ Lost' : '✅ Found'}
                           </Badge>
-                          <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
-                            <div className="flex items-center gap-1">
-                              <Eye className="h-3 w-3" />
-                              {item.views}
-                            </div>
-                            {item.contactAttempts > 0 && (
-                              <div className="flex items-center gap-1">
-                                <User className="h-3 w-3" />
-                                {item.contactAttempts}
-                              </div>
-                            )}
-                          </div>
                         </div>
                       </CardHeader>
                       

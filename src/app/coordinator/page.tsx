@@ -83,8 +83,9 @@ export default function CoordinatorDashboard() {
 
   if (status === "loading" || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-950 dark:to-gray-900 flex flex-col items-center justify-center">
         <Loading size="lg" />
+        <p className="text-gray-600 dark:text-gray-400 mt-4 text-lg font-medium">Loading dashboard...</p>
       </div>
     );
   }

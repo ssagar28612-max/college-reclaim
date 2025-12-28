@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Loading } from "@/components/ui/loading"
 import { Calendar, Clock, MapPin, Users, Plus, Search, Filter, CalendarDays, User } from "lucide-react"
 import { toast } from "sonner"
 import { CLUBS } from "@/data/clubs"
@@ -159,8 +160,9 @@ export default function EventsPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex flex-col items-center justify-center">
+        <Loading size="lg" />
+        <p className="text-gray-600 dark:text-gray-400 mt-4 text-lg font-medium">Loading events...</p>
       </div>
     )
   }
