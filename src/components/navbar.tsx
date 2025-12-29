@@ -16,17 +16,40 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Search, Plus, Bell, User, LogOut, Settings, Sparkles, Sun, Moon, BookOpen, CalendarDays, Menu, X } from "lucide-react"
 import { useTheme } from "@/components/providers"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 export function Navbar() {
   const { data: session, status } = useSession()
   const { theme, toggleTheme } = useTheme()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  // Fetch unread notification count
+  useEffect(() => {
+    if (session) {
+      fetchUnreadCount()
+      // Poll every 30 seconds
+      const interval = setInterval(fetchUnreadCount, 30000)
+      return () => clearInterval(interval)
+    }
+  }, [session])
+
+  const fetchUnreadCount = async () => {
+    try {
+      const res = await fetch('/api/notifications?unreadOnly=true&limit=1')
+      if (res.ok) {
+        const data = await res.json()
+        setUnreadCount(data.unreadCount || 0)
+      }
+    } catch (error) {
+      console.error('Error fetching unread count:', error)
+    }
+  }
 
   return (
-    <nav className="border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg shadow-sm relative z-50 transition-colors duration-300">
+    <nav className="border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg shadow-sm sticky top-0 z-50 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-14 sm:h-16">
           <motion.div 
             className="flex items-center"
             initial={{ opacity: 0, x: -20 }}
@@ -148,7 +171,9 @@ export function Navbar() {
                   >
                     <Button variant="ghost" size="sm" className="relative hover:bg-violet-50 dark:hover:bg-gray-800 hover:text-violet-700 dark:hover:text-violet-400 transition-all duration-200 dark:text-gray-300">
                       <Bell className="h-4 w-4" />
-                      <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full animate-pulse"></span>
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full animate-pulse"></span>
+                      )}
                     </Button>
                   </motion.div>
                 </Link>
@@ -181,12 +206,6 @@ export function Navbar() {
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator className="dark:bg-gray-700" />
-                    <DropdownMenuItem asChild>
-                      <Link href="/dashboard" className="cursor-pointer dark:text-gray-300 dark:hover:text-gray-100">
-                        <User className="mr-2 h-4 w-4" />
-                        <span>Dashboard</span>
-                      </Link>
-                    </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href="/profile" className="cursor-pointer dark:text-gray-300 dark:hover:text-gray-100">
                         <Settings className="mr-2 h-4 w-4" />
@@ -298,7 +317,7 @@ export function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t dark:border-gray-700 py-4"
+            className="md:hidden border-t dark:border-gray-700 py-4 bg-white dark:bg-gray-900"
           >
             <div className="flex flex-col space-y-2">
               <Link href="/search" prefetch={true} onClick={() => setMobileMenuOpen(false)}>
@@ -340,13 +359,6 @@ export function Navbar() {
                   </Link>
 
                   <div className="border-t dark:border-gray-700 my-2"></div>
-                  
-                  <Link href="/dashboard" prefetch={true} onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="ghost" className="w-full justify-start dark:text-gray-300 h-10">
-                      <User className="h-4 w-4 mr-3" />
-                      Dashboard
-                    </Button>
-                  </Link>
                   
                   <Link href="/profile" prefetch={true} onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="ghost" className="w-full justify-start dark:text-gray-300 h-10">

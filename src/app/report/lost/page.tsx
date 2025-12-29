@@ -279,9 +279,11 @@ const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
                         <SelectItem key={loc.id} value={loc.id}>
                           {loc.label}
                         </SelectItem>
-                      ))}
-                    </SelectContent>
+                      ))}  </SelectContent>
                   </Select>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 italic">
+                    Tip: Choose 'Other' to specify a custom location
+                  </p>
                   
                   {formData.locationSelect === "other" && (
                     <div className="relative mt-3">

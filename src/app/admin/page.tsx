@@ -174,58 +174,69 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-900 border-b-2 border-gray-200 dark:border-gray-800 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/" className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
-                <Shield className="text-white w-6 h-6" />
+      {/* Header - Fixed with proper mobile spacing */}
+      <header className="bg-white dark:bg-gray-900 border-b-2 border-gray-200 dark:border-gray-800 shadow-sm sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-14 sm:h-16">
+            <Link href="/" className="flex items-center space-x-2 sm:space-x-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+                <Shield className="text-white w-4 h-4 sm:w-6 sm:h-6" />
               </div>
-              <div>
-                <span className="font-bold text-xl text-gray-900 dark:text-white">College Reclaim</span>
-                <Badge className="ml-2 bg-purple-600 text-white border-0">Admin</Badge>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-base sm:text-xl text-gray-900 dark:text-white hidden xs:inline">College Reclaim</span>
+                <Badge className="bg-purple-600 text-white border-0 text-xs">Admin</Badge>
               </div>
             </Link>
             
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1 sm:space-x-2">
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={toggleTheme}
-                className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 px-2"
               >
-                {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                {theme === "dark" ? <Sun className="h-4 w-4 sm:h-5 sm:w-5" /> : <Moon className="h-4 w-4 sm:h-5 sm:w-5" />}
               </Button>
               <Link href="/">
-                <Button variant="ghost" size="sm" className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800">
+                <Button variant="ghost" size="sm" className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 hidden sm:flex">
                   <Home className="h-4 w-4 mr-2" />
                   Home
+                </Button>
+                <Button variant="ghost" size="sm" className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 sm:hidden px-2">
+                  <Home className="h-4 w-4" />
                 </Button>
               </Link>
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={() => router.push("/auth/signin")}
-                className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 hidden sm:flex"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => router.push("/auth/signin")}
+                className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 sm:hidden px-2"
+              >
+                <LogOut className="h-4 w-4" />
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Admin Dashboard</h1>
-          <p className="text-gray-700 dark:text-gray-300">Manage books, found items, events, and coordinators</p>
+      {/* Main Content - Add top padding for mobile to account for fixed header */}
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 pt-4">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Admin Dashboard</h1>
+          <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300">Manage books, found items, events, and coordinators</p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 p-1">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 p-1 gap-1">
             <TabsTrigger 
               value="books" 
               className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-gray-900 dark:text-white font-medium"

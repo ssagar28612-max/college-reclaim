@@ -17,6 +17,7 @@ import { HoverCard } from "@/components/ui/animated-card"
 import { GridSkeletonLoader } from "@/components/ui/enhanced-skeletons"
 import { PageTransition } from "@/components/ui/page-transition"
 import { Navbar } from "@/components/navbar"
+import { ClickableImage } from "@/components/ui/image-preview"
 
 interface Book {
   id: string
@@ -216,25 +217,26 @@ export default function BooksPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.05 }}
                   >
-                    {/* Book Image/Icon */}
+                    {/* Book Image/Icon - Clickable for full preview */}
                     <div className="relative h-48 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 flex items-center justify-center overflow-hidden">
                       {book.imageUrl ? (
-                        <img 
-                          src={book.imageUrl} 
+                        <ClickableImage
+                          src={book.imageUrl}
                           alt={book.title}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          className="w-full h-full object-cover"
+                          containerClassName="w-full h-full"
                         />
                       ) : (
                         <BookOpen className="h-16 w-16 text-blue-400 dark:text-blue-300 group-hover:scale-110 transition-transform duration-500" />
                       )}
-                      <Badge className="absolute top-3 right-3 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200 shadow-lg" variant={book.type === 'RENT' ? 'default' : 'secondary'}>
+                      <Badge className="absolute top-3 right-3 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200 shadow-lg z-10 pointer-events-none" variant={book.type === 'RENT' ? 'default' : 'secondary'}>
                         {book.type === 'RENT' ? '📚 Rent' : '💰 Sale'}
                       </Badge>
                       <motion.div 
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ delay: 0.2 + index * 0.05 }}
-                        className="absolute top-3 left-3"
+                        className="absolute top-3 left-3 z-10 pointer-events-none"
                       >
                         <div className={`w-3 h-3 rounded-full ${book.isAvailable ? 'bg-green-500' : 'bg-red-500'} shadow-lg`} />
                       </motion.div>
@@ -273,10 +275,6 @@ export default function BooksPage() {
                           <Badge variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
                             {book.condition}
                           </Badge>
-                          <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                            <span className={`w-2 h-2 rounded-full ${book.isAvailable ? 'bg-green-500' : 'bg-red-500'} animate-pulse`} />
-                            {book.isAvailable ? 'Available' : 'Not Available'}
-                          </span>
                         </div>
 
                         {/* Auth-Protected Contact Information */}

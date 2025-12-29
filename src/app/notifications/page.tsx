@@ -26,6 +26,8 @@ export default function NotificationsPage() {
   useEffect(() => {
     if (status === "authenticated") {
       fetchNotifications()
+      // Mark all as read when page loads
+      markAllAsRead()
     }
   }, [status])
 
@@ -48,6 +50,18 @@ export default function NotificationsPage() {
       setNotifications([])
     } finally {
       setLoading(false)
+    }
+  }
+
+  const markAllAsRead = async () => {
+    try {
+      await fetch("/api/notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ markAll: true })
+      })
+    } catch (error) {
+      console.error("Error marking notifications as read:", error)
     }
   }
 

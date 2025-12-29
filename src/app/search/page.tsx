@@ -17,6 +17,7 @@ import { ArrowLeft, Search as SearchIcon, Filter, MapPin, Calendar, User, Heart,
 import { toast } from "sonner"
 import { AuthProtectedContact } from "@/components/ui/auth-protected-contact"
 import { HoverCard } from "@/components/ui/animated-card"
+import { ClickableImage } from "@/components/ui/image-preview"
 
 // Debounce hook for search input
 function useDebounce<T>(value: T, delay: number): T {
@@ -70,8 +71,8 @@ export default function Search() {
       setIsLoading(true)
       try {
         const [lostResponse, foundResponse] = await Promise.all([
-          fetch('/api/lost-items'),
-          fetch('/api/found-items')
+          fetch('/api/lost-items?limit=1000'),
+          fetch('/api/found-items?limit=1000')
         ])
 
         if (lostResponse.ok) {
@@ -102,6 +103,7 @@ export default function Search() {
   const allItems = useMemo(() => {
     const transformedLost = lostItems.map(item => {
       const date = new Date(item.dateLost)
+      const reportedDate = new Date(item.createdAt)
       return {
         id: item.id,
         type: 'lost',
@@ -111,6 +113,7 @@ export default function Search() {
         location: item.location,
         date: date.toLocaleDateString('en-CA'), // YYYY-MM-DD format in local timezone
         time: date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+        createdAt: reportedDate,
         reporter: item.user?.name || 'Anonymous',
         contactEmail: item.user?.email || null,
         contactPhone: item.contactPhone || item.user?.phoneNumber || null,
@@ -124,6 +127,7 @@ export default function Search() {
 
     const transformedFound = foundItems.map(item => {
       const date = new Date(item.dateFound)
+      const reportedDate = new Date(item.createdAt)
       return {
         id: item.id,
         type: 'found',
@@ -133,6 +137,7 @@ export default function Search() {
         location: item.location,
         date: date.toLocaleDateString('en-CA'), // YYYY-MM-DD format in local timezone
         time: date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+        createdAt: reportedDate,
         reporter: item.user?.name || 'Anonymous',
         contactEmail: item.user?.email || null,
         contactPhone: item.contactPhone || item.user?.phoneNumber || null,
@@ -170,7 +175,8 @@ export default function Search() {
     }).sort((a, b) => {
       switch (sortBy) {
         case 'date':
-          return new Date(b.date + ' ' + b.time).getTime() - new Date(a.date + ' ' + a.time).getTime()
+          // Sort by when the item was reported (createdAt), not when it was lost/found
+          return b.createdAt.getTime() - a.createdAt.getTime()
         case 'views':
           return b.views - a.views
         case 'title':
@@ -409,17 +415,12 @@ export default function Search() {
                       
                       <CardContent className="pt-0">
                         {item.imageUrl ? (
-                          <div className="mb-4 rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700">
-                            <img 
-                              src={item.imageUrl} 
-                              alt={item.title}
-                              className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
-                              onError={(e) => {
-                                console.error('Image failed to load:', item.imageUrl)
-                                e.currentTarget.style.display = 'none'
-                              }}
-                            />
-                          </div>
+                          <ClickableImage
+                            src={item.imageUrl}
+                            alt={item.title}
+                            className="w-full h-48 object-cover"
+                            containerClassName="mb-4 rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700"
+                          />
                         ) : (
                           <div className="mb-4 rounded-lg overflow-hidden border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 h-48 flex items-center justify-center">
                             <div className="text-center">
@@ -487,13 +488,12 @@ export default function Search() {
                       <CardContent className="p-6">
                         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                           {item.imageUrl && (
-                            <div className="md:w-40 md:h-28 w-full h-48 rounded-lg overflow-hidden flex-shrink-0">
-                              <img 
-                                src={item.imageUrl} 
-                                alt={item.title}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
+                            <ClickableImage
+                              src={item.imageUrl}
+                              alt={item.title}
+                              className="w-full h-full object-cover"
+                              containerClassName="md:w-40 md:h-28 w-full h-48 rounded-lg overflow-hidden flex-shrink-0"
+                            />
                           )}
                           
                           <div className="flex-1">
