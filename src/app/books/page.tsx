@@ -3,15 +3,20 @@
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
+import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { BookOpen, Search, Plus } from "lucide-react"
+import { BookOpen, Search, Plus, Sparkles } from "lucide-react"
 import { mockBooks } from "@/data/mockData"
-import { BookGridSkeleton } from "@/components/loading/book-skeletons"
 import { BackButton } from "@/components/ui/back-button"
+import { AuthProtectedContact } from "@/components/ui/auth-protected-contact"
+import { HoverCard } from "@/components/ui/animated-card"
+import { GridSkeletonLoader } from "@/components/ui/enhanced-skeletons"
+import { PageTransition } from "@/components/ui/page-transition"
+import { Navbar } from "@/components/navbar"
 
 interface Book {
   id: string
@@ -78,162 +83,233 @@ export default function BooksPage() {
   }
 
   if (loading) {
-    return <BookGridSkeleton />
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-4">
+            <BackButton />
+          </div>
+          <div className="text-center mb-8">
+            <div className="h-12 w-64 mx-auto bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse mb-4" />
+            <div className="h-6 w-96 mx-auto bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
+          </div>
+          <GridSkeletonLoader count={8} type="book" />
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8">
-      <div className="container mx-auto px-4">
-        {/* Back Button */}
-        <div className="mb-4">
-          <BackButton />
+    <PageTransition>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
         </div>
+        
+        <Navbar />
+        
+        <div className="container mx-auto px-4 py-8 relative z-10">
+          {/* Back Button */}
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="mb-4"
+          >
+            <BackButton />
+          </motion.div>
 
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
-            Book Marketplace
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">Buy, sell, or rent textbooks with fellow students</p>
-        </div>
+          {/* Header */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-8"
+          >
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4 flex items-center justify-center gap-3">
+              <Sparkles className="h-8 w-8 text-blue-600" />
+              Book Marketplace
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 text-lg">Buy, sell, or rent textbooks with fellow students</p>
+          </motion.div>
 
-        {/* Search and Filters */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 mb-8">
-          <div className="flex gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
-              <Input
-                placeholder="Search books by title or author..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100"
-              />
+          {/* Search and Filters */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-md rounded-xl p-6 shadow-xl border border-white/20 dark:border-gray-700/50 mb-8"
+          >
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
+                <Input
+                  placeholder="Search books by title or author..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 bg-white/50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <Select value={typeFilter || "all"} onValueChange={(value) => setTypeFilter(value === "all" ? "" : value)}>
+                <SelectTrigger className="w-full sm:w-32 bg-white/50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600">
+                  <SelectValue placeholder="Type" />
+                </SelectTrigger>
+                <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="SELL">For Sale</SelectItem>
+                  <SelectItem value="RENT">For Rent</SelectItem>
+                </SelectContent>
+              </Select>
+              {session && (
+                <Link href="/books/new">
+                  <Button className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all">
+                    <Plus className="w-4 h-4 mr-2" />
+                    List Book
+                  </Button>
+                </Link>
+              )}
             </div>
-            <Select value={typeFilter || "all"} onValueChange={(value) => setTypeFilter(value === "all" ? "" : value)}>
-              <SelectTrigger className="w-32 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600">
-                <SelectValue placeholder="Type" />
-              </SelectTrigger>
-              <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="SELL">For Sale</SelectItem>
-                <SelectItem value="RENT">For Rent</SelectItem>
-              </SelectContent>
-            </Select>
-            {session && (
-              <Link href="/books/new">
-                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
-                  <Plus className="w-4 h-4 mr-2" />
-                  List Book
-                </Button>
-              </Link>
-            )}
-          </div>
-        </div>
+          </motion.div>
 
-        {/* Books Grid */}
-        {filteredBooks.length === 0 ? (
-          <div className="text-center py-16">
-            <BookOpen className="h-12 w-12 text-blue-400 dark:text-blue-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">No books found</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              {searchQuery || typeFilter ? "Try adjusting your filters" : "Be the first to list a book!"}
-            </p>
-            {session && (
-              <Link href="/books/new">
-                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
-                  <Plus className="w-4 h-4 mr-2" />
-                  List Your First Book
-                </Button>
-              </Link>
-            )}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredBooks.map((book) => (
-              <Card key={book.id} className="hover:shadow-xl transition-all duration-300 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                {/* Book Image/Icon */}
-                <div className="relative h-48 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 flex items-center justify-center overflow-hidden">
-                  {book.imageUrl ? (
-                    <img 
-                      src={book.imageUrl} 
-                      alt={book.title}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <BookOpen className="h-16 w-16 text-blue-400 dark:text-blue-300" />
-                  )}
-                  <Badge className="absolute top-3 right-3 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200" variant={book.type === 'RENT' ? 'default' : 'secondary'}>
-                    {book.type === 'RENT' ? 'For Rent' : 'For Sale'}
-                  </Badge>
-                  <div className="absolute top-3 left-3">
-                    <div className={`w-3 h-3 rounded-full ${book.isAvailable ? 'bg-green-500' : 'bg-red-500'}`} />
-                  </div>
-                </div>
-                
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg line-clamp-2 text-gray-900 dark:text-gray-100">{book.title}</CardTitle>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">by {book.author}</p>
-                </CardHeader>
+          {/* Books Grid */}
+          {filteredBooks.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="text-center py-16"
+            >
+              <motion.div
+                animate={{ 
+                  rotate: [0, 10, -10, 0],
+                  scale: [1, 1.1, 1]
+                }}
+                transition={{ 
+                  duration: 2,
+                  repeat: Infinity,
+                  repeatType: "reverse"
+                }}
+              >
+                <BookOpen className="h-16 w-16 text-blue-400 dark:text-blue-300 mx-auto mb-4" />
+              </motion.div>
+              <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">No books found</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                {searchQuery || typeFilter ? "Try adjusting your filters" : "Be the first to list a book!"}
+              </p>
+              {session && (
+                <Link href="/books/new">
+                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                    <Plus className="w-4 h-4 mr-2" />
+                    List Your First Book
+                  </Button>
+                </Link>
+              )}
+            </motion.div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredBooks.map((book, index) => (
+                <HoverCard key={book.id} glowColor="blue" className="h-full">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.05 }}
+                  >
+                    {/* Book Image/Icon */}
+                    <div className="relative h-48 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 flex items-center justify-center overflow-hidden">
+                      {book.imageUrl ? (
+                        <img 
+                          src={book.imageUrl} 
+                          alt={book.title}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                      ) : (
+                        <BookOpen className="h-16 w-16 text-blue-400 dark:text-blue-300 group-hover:scale-110 transition-transform duration-500" />
+                      )}
+                      <Badge className="absolute top-3 right-3 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200 shadow-lg" variant={book.type === 'RENT' ? 'default' : 'secondary'}>
+                        {book.type === 'RENT' ? '📚 Rent' : '💰 Sale'}
+                      </Badge>
+                      <motion.div 
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 0.2 + index * 0.05 }}
+                        className="absolute top-3 left-3"
+                      >
+                        <div className={`w-3 h-3 rounded-full ${book.isAvailable ? 'bg-green-500' : 'bg-red-500'} shadow-lg`} />
+                      </motion.div>
+                    </div>
+                    
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg line-clamp-2 text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        {book.title}
+                      </CardTitle>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">by {book.author}</p>
+                    </CardHeader>
 
-                <CardContent>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
-                    {book.description}
-                  </p>
-                  
-                  <div className="space-y-3">
-                    {/* Price */}
-                    <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
-                      <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold text-green-600 dark:text-green-400">
-                          {formatPrice(book.priceOrRent, book.type)}
-                        </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {book.type === 'RENT' ? 'Monthly' : 'One-time'}
-                        </span>
+                    <CardContent>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
+                        {book.description}
+                      </p>
+                      
+                      <div className="space-y-3">
+                        {/* Price */}
+                        <motion.div 
+                          whileHover={{ scale: 1.02 }}
+                          className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 rounded-lg p-3 border border-green-200 dark:border-green-700/50"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-lg font-bold text-green-600 dark:text-green-400">
+                              {formatPrice(book.priceOrRent, book.type)}
+                            </span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              {book.type === 'RENT' ? 'Monthly' : 'One-time'}
+                            </span>
+                          </div>
+                        </motion.div>
+
+                        {/* Condition Badge */}
+                        <div className="flex items-center justify-between">
+                          <Badge variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
+                            {book.condition}
+                          </Badge>
+                          <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                            <span className={`w-2 h-2 rounded-full ${book.isAvailable ? 'bg-green-500' : 'bg-red-500'} animate-pulse`} />
+                            {book.isAvailable ? 'Available' : 'Not Available'}
+                          </span>
+                        </div>
+
+                        {/* Auth-Protected Contact Information */}
+                        <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                          <AuthProtectedContact
+                            contactInfo={{
+                              email: book.owner.email,
+                              phone: book.contactPhone || book.owner.phoneNumber
+                            }}
+                            variant="inline"
+                          />
+                        </div>
                       </div>
-                    </div>
+                    </CardContent>
+                  </motion.div>
+                </HoverCard>
+              ))}
+            </div>
+          )}
 
-                    {/* Condition Badge */}
-                    <div className="flex items-center justify-between">
-                      <Badge variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">{book.condition}</Badge>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {book.isAvailable ? 'Available' : 'Not Available'}
-                      </span>
-                    </div>
-
-                    {/* Contact Information */}
-                    <div className="space-y-2 pt-2">
-                      <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Owner Contact:</div>
-                      {book.owner.email && (
-                        <a
-                          href={`mailto:${book.owner.email}`}
-                          className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline transition-colors"
-                        >
-                          <span className="text-lg">📧</span>
-                          <span className="truncate">{book.owner.email}</span>
-                        </a>
-                      )}
-                      {(book.contactPhone || book.owner.phoneNumber) && (
-                        <a
-                          href={`tel:${book.contactPhone || book.owner.phoneNumber}`}
-                          className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:underline transition-colors"
-                        >
-                          <span className="text-lg">📱</span>
-                          <span>{book.contactPhone || book.owner.phoneNumber}</span>
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {/* Footer Stats */}
-        <div className="text-center mt-8 text-gray-600 dark:text-gray-400">
-          <p>Showing {filteredBooks.length} book{filteredBooks.length !== 1 ? 's' : ''} available in the marketplace</p>
+          {/* Footer Stats */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="text-center mt-8 text-gray-600 dark:text-gray-400"
+          >
+            <p className="text-sm">
+              Showing <span className="font-semibold text-blue-600 dark:text-blue-400">{filteredBooks.length}</span> book{filteredBooks.length !== 1 ? 's' : ''} available in the marketplace
+            </p>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </PageTransition>
   )
 }

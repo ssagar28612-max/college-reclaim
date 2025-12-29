@@ -15,6 +15,8 @@ import { Navbar } from "@/components/navbar"
 import { BackButton } from "@/components/ui/back-button"
 import { ArrowLeft, Search as SearchIcon, Filter, MapPin, Calendar, User, Heart, Eye, ExternalLink, Sparkles } from "lucide-react"
 import { toast } from "sonner"
+import { AuthProtectedContact } from "@/components/ui/auth-protected-contact"
+import { HoverCard } from "@/components/ui/animated-card"
 
 // Debounce hook for search input
 function useDebounce<T>(value: T, delay: number): T {
@@ -445,27 +447,14 @@ export default function Search() {
                         </div>
                         
                         <div className="space-y-3">
-                          <div className="border-t pt-3 space-y-2">
-                            <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Contact Information</h4>
-                            {item.contactEmail && (
-                              <div className="flex items-center gap-2 text-sm">
-                                <span className="text-gray-500 dark:text-gray-400">📧</span>
-                                <a href={`mailto:${item.contactEmail}`} className="text-violet-600 dark:text-violet-400 hover:underline">
-                                  {item.contactEmail}
-                                </a>
-                              </div>
-                            )}
-                            {item.contactPhone && (
-                              <div className="flex items-center gap-2 text-sm">
-                                <span className="text-gray-500 dark:text-gray-400">📱</span>
-                                <a href={`tel:${item.contactPhone}`} className="text-violet-600 dark:text-violet-400 hover:underline">
-                                  {item.contactPhone}
-                                </a>
-                              </div>
-                            )}
-                            {!item.contactEmail && !item.contactPhone && (
-                              <p className="text-xs text-gray-500 dark:text-gray-400 italic">No contact information provided</p>
-                            )}
+                          <div className="border-t pt-3">
+                            <AuthProtectedContact
+                              contactInfo={{
+                                email: item.contactEmail,
+                                phone: item.contactPhone
+                              }}
+                              variant="card"
+                            />
                           </div>
                         </div>
                       </CardContent>
@@ -535,26 +524,14 @@ export default function Search() {
                           </div>
                           
                           <div className="flex flex-col gap-2 min-w-[250px]">
-                            <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Contact</div>
-                            {item.contactEmail && (
-                              <div className="flex items-center gap-2 text-sm">
-                                <span className="text-gray-500 dark:text-gray-400">📧</span>
-                                <a href={`mailto:${item.contactEmail}`} className="text-violet-600 dark:text-violet-400 hover:underline truncate">
-                                  {item.contactEmail}
-                                </a>
-                              </div>
-                            )}
-                            {item.contactPhone && (
-                              <div className="flex items-center gap-2 text-sm">
-                                <span className="text-gray-500 dark:text-gray-400">📱</span>
-                                <a href={`tel:${item.contactPhone}`} className="text-violet-600 dark:text-violet-400 hover:underline">
-                                  {item.contactPhone}
-                                </a>
-                              </div>
-                            )}
-                            {!item.contactEmail && !item.contactPhone && (
-                              <p className="text-xs text-gray-500 dark:text-gray-400 italic">No contact info</p>
-                            )}
+                            <AuthProtectedContact
+                              contactInfo={{
+                                email: item.contactEmail,
+                                phone: item.contactPhone
+                              }}
+                              variant="inline"
+                              showTitle={true}
+                            />
                           </div>
                         </div>
                       </CardContent>
