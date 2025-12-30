@@ -51,7 +51,7 @@ This means the Gmail App Password is **invalid, expired, or incorrect**.
 1. **Go to Admin Dashboard**: http://localhost:3000/admin
 2. **Sign in** with admin credentials:
    - Email: `collegereclaimjc@gmail.com`
-   - Password: `Enixboi21`
+   - Password: `redacted`
 3. **Click "Notify" tab**
 4. **Test with yourself**:
    - Select "Send to Specific User"
