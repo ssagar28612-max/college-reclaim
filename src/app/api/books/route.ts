@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type') || ''
     const condition = searchParams.get('condition') || ''
     const available = searchParams.get('available')
-    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50)
+    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 1000)
     const offset = parseInt(searchParams.get('offset') || '0')
 
     const where: any = {}

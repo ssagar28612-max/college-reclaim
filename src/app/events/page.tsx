@@ -74,6 +74,7 @@ export default function EventsPage() {
       if (selectedClub && selectedClub !== 'all') params.append('clubOrDept', selectedClub)
       if (selectedDepartment && selectedDepartment !== 'all') params.append('clubOrDept', selectedDepartment)
       if (filterUpcoming) params.append('upcoming', 'true')
+      params.append('limit', '1000')
 
       const response = await fetch(`/api/events?${params.toString()}`)
       const data = await response.json()

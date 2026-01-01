@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') || ''
     const clubOrDept = searchParams.get('clubOrDept') || ''
     const upcoming = searchParams.get('upcoming')
-    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50)
+    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 1000)
     const offset = parseInt(searchParams.get('offset') || '0')
 
     const where: any = {}

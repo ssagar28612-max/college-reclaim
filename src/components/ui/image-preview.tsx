@@ -16,10 +16,16 @@ interface ImagePreviewModalProps {
 export function ImagePreviewModal({ src, alt, isOpen, onClose }: ImagePreviewModalProps) {
   const [zoom, setZoom] = useState(1)
 
-  // Reset zoom when modal opens/closes
+  // Lock body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
       setZoom(1)
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
     }
   }, [isOpen])
 
@@ -37,63 +43,62 @@ export function ImagePreviewModal({ src, alt, isOpen, onClose }: ImagePreviewMod
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
+        <div className="fixed inset-0 z-[9999]" style={{ isolation: 'isolate' }}>
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/90 z-[100] cursor-zoom-out"
+            className="absolute inset-0 bg-black/90 cursor-zoom-out"
           />
 
-          {/* Modal Container */}
-          <div className="fixed inset-0 z-[101] flex items-center justify-center p-4">
-            {/* Controls */}
-            <div className="absolute top-4 right-4 flex items-center gap-2 z-[102]">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleZoomOut}
-                disabled={zoom <= 0.5}
-                className="bg-white/10 hover:bg-white/20 text-white backdrop-blur-md"
-              >
-                <ZoomOut className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleZoomIn}
-                disabled={zoom >= 3}
-                className="bg-white/10 hover:bg-white/20 text-white backdrop-blur-md"
-              >
-                <ZoomIn className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleDownload}
-                className="bg-white/10 hover:bg-white/20 text-white backdrop-blur-md"
-              >
-                <Download className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onClose}
-                className="bg-white/10 hover:bg-white/20 text-white backdrop-blur-md"
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
+          {/* Controls */}
+          <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleZoomOut}
+              disabled={zoom <= 0.5}
+              className="bg-white/10 hover:bg-white/20 text-white backdrop-blur-md"
+            >
+              <ZoomOut className="h-5 w-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleZoomIn}
+              disabled={zoom >= 3}
+              className="bg-white/10 hover:bg-white/20 text-white backdrop-blur-md"
+            >
+              <ZoomIn className="h-5 w-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleDownload}
+              className="bg-white/10 hover:bg-white/20 text-white backdrop-blur-md"
+            >
+              <Download className="h-5 w-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="bg-white/10 hover:bg-white/20 text-white backdrop-blur-md"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
 
-            {/* Image */}
+          {/* Image Container */}
+          <div className="absolute inset-0 flex items-center justify-center p-4">
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ type: "spring", damping: 25 }}
-              className="relative max-w-full max-h-full overflow-auto"
+              className="relative max-w-full max-h-full"
               style={{ transform: `scale(${zoom})`, transition: 'transform 0.2s ease-out' }}
             >
               <img
@@ -103,15 +108,15 @@ export function ImagePreviewModal({ src, alt, isOpen, onClose }: ImagePreviewMod
                 onClick={(e) => e.stopPropagation()}
               />
             </motion.div>
-
-            {/* Alt Text Display */}
-            {alt && (
-              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white/10 backdrop-blur-md text-white px-4 py-2 rounded-lg text-sm max-w-md text-center">
-                {alt}
-              </div>
-            )}
           </div>
-        </>
+
+          {/* Alt Text Display */}
+          {alt && (
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white/10 backdrop-blur-md text-white px-4 py-2 rounded-lg text-sm max-w-md text-center">
+              {alt}
+            </div>
+          )}
+        </div>
       )}
     </AnimatePresence>
   )

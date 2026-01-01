@@ -13,6 +13,7 @@ import { BookOpen, Search, Plus, Sparkles } from "lucide-react"
 import { mockBooks } from "@/data/mockData"
 import { BackButton } from "@/components/ui/back-button"
 import { AuthProtectedContact } from "@/components/ui/auth-protected-contact"
+import { SendMessageButton } from "@/components/send-message-button"
 import { HoverCard } from "@/components/ui/animated-card"
 import { GridSkeletonLoader } from "@/components/ui/enhanced-skeletons"
 import { PageTransition } from "@/components/ui/page-transition"
@@ -53,8 +54,10 @@ export default function BooksPage() {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
+        setLoading(true)
         const params = new URLSearchParams()
         if (typeFilter) params.append('type', typeFilter)
+        params.append('limit', '1000')
         
         const response = await fetch(`/api/books?${params.toString()}`)
         if (!response.ok) throw new Error('Failed to fetch books')
@@ -287,6 +290,19 @@ export default function BooksPage() {
                             variant="inline"
                           />
                         </div>
+                        
+                        {/* Send Message Button */}
+                        <SendMessageButton
+                          itemType="BOOK"
+                          itemId={book.id}
+                          ownerId={book.owner.id}
+                          ownerName={book.owner.name}
+                          ownerImage={book.owner.image}
+                          itemTitle={book.title}
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                        />
                       </div>
                     </CardContent>
                   </motion.div>

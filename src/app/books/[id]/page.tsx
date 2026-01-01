@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label"
 import { ArrowLeft, BookOpen, User, Calendar, IndianRupee, MessageCircle, Edit3, Trash2, Heart, Share2 } from "lucide-react"
 import { toast } from "sonner"
 import { BookDetailSkeleton } from "@/components/loading/book-skeletons"
+import { SendMessageButton } from "@/components/send-message-button"
 
 interface Book {
   id: string
@@ -366,12 +367,13 @@ export default function BookDetailsPage() {
               </Card>
             </motion.div>
 
-            {/* Action Button */}
+            {/* Action Buttons */}
             {!isOwner && book.isAvailable && (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 }}
+                className="space-y-3"
               >
                 <Dialog open={isRequestDialogOpen} onOpenChange={setIsRequestDialogOpen}>
                   <DialogTrigger asChild>
@@ -419,6 +421,17 @@ export default function BookDetailsPage() {
                     </div>
                   </DialogContent>
                 </Dialog>
+
+                <SendMessageButton
+                  itemType="BOOK"
+                  itemId={bookId}
+                  ownerId={book.owner.id}
+                  ownerName={book.owner.name || "Book Owner"}
+                  ownerImage={book.owner.image}
+                  itemTitle={book.title}
+                  variant="outline"
+                  className="w-full"
+                />
               </motion.div>
             )}
 

@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { 
   Shield, Mail, Trash2, BookOpen, Package, 
   Calendar, UserCheck, ThumbsUp, ThumbsDown,
-  Moon, Sun, Home, LogOut, RefreshCw
+  Moon, Sun, Home, LogOut, RefreshCw, MessageSquare
 } from "lucide-react"
 import { toast } from "sonner"
 import { useTheme } from "@/components/providers"
@@ -47,19 +47,19 @@ export default function AdminDashboard() {
         const data = await res.json()
         setCoordinatorRequests(data.requests || [])
       } else if (activeTab === "books") {
-        const res = await fetch("/api/books")
+        const res = await fetch("/api/books?limit=1000")
         const data = await res.json()
         setBooks(Array.isArray(data) ? data : data.books || data.items || [])
       } else if (activeTab === "lost") {
-        const res = await fetch("/api/lost-items")
+        const res = await fetch("/api/lost-items?limit=1000")
         const data = await res.json()
         setLostItems(Array.isArray(data) ? data : data.items || data.lostItems || [])
       } else if (activeTab === "found") {
-        const res = await fetch("/api/found-items")
+        const res = await fetch("/api/found-items?limit=1000")
         const data = await res.json()
         setFoundItems(Array.isArray(data) ? data : data.items || data.foundItems || [])
       } else if (activeTab === "events") {
-        const res = await fetch("/api/events")
+        const res = await fetch("/api/events?limit=1000")
         const data = await res.json()
         setEvents(Array.isArray(data) ? data : data.events || [])
       } else if (activeTab === "notify") {
@@ -236,7 +236,7 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 p-1 gap-1">
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-7 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 p-1 gap-1">
             <TabsTrigger 
               value="books" 
               className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-gray-900 dark:text-white font-medium"
@@ -264,6 +264,13 @@ export default function AdminDashboard() {
             >
               <Calendar className="h-4 w-4 mr-2" />
               Events
+            </TabsTrigger>
+            <TabsTrigger 
+              value="conversations"
+              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-gray-900 dark:text-white font-medium"
+            >
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Chats
             </TabsTrigger>
             <TabsTrigger 
               value="coordinators"
@@ -453,6 +460,29 @@ export default function AdminDashboard() {
                       </motion.div>
                     ))
                   )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Conversations Tab */}
+          <TabsContent value="conversations">
+            <Card className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800">
+              <CardHeader>
+                <CardTitle className="text-gray-900 dark:text-white">Chat Monitoring</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <MessageSquare className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+                  <p className="text-gray-700 dark:text-gray-300 mb-4">
+                    View and monitor all user conversations
+                  </p>
+                  <Link href="/admin/conversations">
+                    <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Open Chat Dashboard
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>

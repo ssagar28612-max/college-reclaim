@@ -18,6 +18,7 @@ import { toast } from "sonner"
 import { AuthProtectedContact } from "@/components/ui/auth-protected-contact"
 import { HoverCard } from "@/components/ui/animated-card"
 import { ClickableImage } from "@/components/ui/image-preview"
+import { SendMessageButton } from "@/components/send-message-button"
 
 // Debounce hook for search input
 function useDebounce<T>(value: T, delay: number): T {
@@ -79,18 +80,17 @@ export default function Search() {
           const lostData = await lostResponse.json()
           setLostItems(lostData.items || [])
         } else {
-          toast.error('Failed to load lost items')
+          console.error('Failed to load lost items')
         }
 
         if (foundResponse.ok) {
           const foundData = await foundResponse.json()
           setFoundItems(foundData.items || [])
         } else {
-          toast.error('Failed to load found items')
+          console.error('Failed to load found items')
         }
       } catch (error) {
         console.error('Error fetching items:', error)
-        toast.error('Failed to load items. Please try again.')
       } finally {
         setIsLoading(false)
       }
@@ -115,6 +115,8 @@ export default function Search() {
         time: date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
         createdAt: reportedDate,
         reporter: item.user?.name || 'Anonymous',
+        reporterId: item.user?.id || null,
+        reporterImage: item.user?.image || null,
         contactEmail: item.user?.email || null,
         contactPhone: item.contactPhone || item.user?.phoneNumber || null,
         imageUrl: item.imageUrl || null,
@@ -139,6 +141,8 @@ export default function Search() {
         time: date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
         createdAt: reportedDate,
         reporter: item.user?.name || 'Anonymous',
+        reporterId: item.user?.id || null,
+        reporterImage: item.user?.image || null,
         contactEmail: item.user?.email || null,
         contactPhone: item.contactPhone || item.user?.phoneNumber || null,
         imageUrl: item.imageUrl || null,
@@ -204,11 +208,11 @@ export default function Search() {
   // Show loading screen while fetching items
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-violet-50 via-indigo-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-violet-50 via-indigo-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <Navbar />
         <div className="flex flex-col items-center justify-center min-h-[80vh]">
-          <Loading size="lg" />
-          <p className="text-gray-600 dark:text-gray-400 mt-4 text-lg font-medium">Loading items...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
+          <p className="text-gray-600 dark:text-gray-400 mt-4 text-sm">Loading items...</p>
         </div>
       </div>
     )
@@ -457,6 +461,19 @@ export default function Search() {
                               variant="card"
                             />
                           </div>
+                          {item.reporterId && (
+                            <SendMessageButton
+                              itemType={item.type === 'lost' ? 'LOST_ITEM' : 'FOUND_ITEM'}
+                              itemId={item.id}
+                              ownerId={item.reporterId}
+                              ownerName={item.reporter}
+                              ownerImage={item.reporterImage}
+                              itemTitle={item.title}
+                              variant="outline"
+                              size="sm"
+                              className="w-full"
+                            />
+                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -532,6 +549,19 @@ export default function Search() {
                               variant="inline"
                               showTitle={true}
                             />
+                            {item.reporterId && (
+                              <SendMessageButton
+                                itemType={item.type === 'lost' ? 'LOST_ITEM' : 'FOUND_ITEM'}
+                                itemId={item.id}
+                                ownerId={item.reporterId}
+                                ownerName={item.reporter}
+                                ownerImage={item.reporterImage}
+                                itemTitle={item.title}
+                                variant="outline"
+                                size="sm"
+                                className="w-full"
+                              />
+                            )}
                           </div>
                         </div>
                       </CardContent>

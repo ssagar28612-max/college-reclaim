@@ -407,7 +407,7 @@ const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
                   <Button 
                     type="submit" 
                     disabled={isSubmitting}
-                    className="w-full h-12 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 dark:from-red-700 dark:to-rose-700 dark:hover:from-red-800 dark:hover:to-rose-800 text-white font-semibold text-lg shadow-lg"
+                    className="w-full h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 dark:from-green-700 dark:to-emerald-700 dark:hover:from-green-800 dark:hover:to-emerald-800 text-white font-semibold text-lg shadow-lg"
                   >
                     {isSubmitting ? (
                       <>
@@ -415,7 +415,7 @@ const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
                         Submitting...
                       </>
                     ) : (
-                      "Report Lost Item"
+                      "Report Found Item"
                     )}
                   </Button>
                 </div>

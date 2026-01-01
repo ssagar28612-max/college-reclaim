@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     const search = searchParams.get('search')
     const status = searchParams.get('status') as ItemStatus | null
     const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '10')
+    const limit = Math.min(parseInt(searchParams.get('limit') || '10'), 1000)
     const skip = (page - 1) * limit
 
     const where: Record<string, unknown> = {}

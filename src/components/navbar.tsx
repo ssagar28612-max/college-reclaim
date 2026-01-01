@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Search, Plus, Bell, User, LogOut, Settings, Sparkles, Sun, Moon, BookOpen, CalendarDays, Menu, X } from "lucide-react"
+import { Search, Plus, Bell, User, LogOut, Settings, Sparkles, Sun, Moon, BookOpen, CalendarDays, Menu, X, MessageSquare } from "lucide-react"
 import { useTheme } from "@/components/providers"
 import { useState, useEffect } from "react"
 
@@ -174,6 +174,17 @@ export function Navbar() {
                       {unreadCount > 0 && (
                         <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full animate-pulse"></span>
                       )}
+                    </Button>
+                  </motion.div>
+                </Link>
+
+                <Link href="/messages" prefetch={true}>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Button variant="ghost" size="sm" className="hover:bg-blue-50 dark:hover:bg-gray-800 hover:text-blue-700 dark:hover:text-blue-400 transition-all duration-200 text-gray-700 dark:text-gray-300">
+                      <MessageSquare className="h-4 w-4" />
                     </Button>
                   </motion.div>
                 </Link>

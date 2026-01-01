@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ArrowLeft, CalendarDays, Clock, MapPin, Users, User, Edit3, Trash2, Share2, Heart } from "lucide-react"
 import { toast } from "sonner"
+import { SendMessageButton } from "@/components/send-message-button"
 
 interface Event {
   id: string
@@ -389,12 +390,13 @@ export default function EventDetailsPage() {
               </Card>
             </motion.div>
 
-            {/* Action Button */}
+            {/* Action Buttons */}
             {!isOrganizer && !eventPassed && (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 }}
+                className="space-y-3"
               >
                 <Button 
                   onClick={handleShowInterest}
@@ -408,6 +410,17 @@ export default function EventDetailsPage() {
                   <Heart className={`w-4 h-4 mr-2 ${event.isInterestedByUser ? 'fill-current' : ''}`} />
                   {event.isInterestedByUser ? 'Interested' : eventFull ? 'Event Full' : 'Show Interest'}
                 </Button>
+
+                <SendMessageButton
+                  itemType="EVENT"
+                  itemId={eventId}
+                  ownerId={event.postedBy.id}
+                  ownerName={event.postedBy.name || "Event Organizer"}
+                  ownerImage={event.postedBy.image || undefined}
+                  itemTitle={event.title}
+                  variant="outline"
+                  className="w-full"
+                />
               </motion.div>
             )}
 
