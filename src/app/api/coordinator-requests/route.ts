@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
                         </ul>
                       </div>
 
-                      <p style="margin-top: 30px;">If you have any questions, please contact us at <a href="mailto:collegereclaimjc@gmail.com">collegereclaimjc@gmail.com</a>.</p>
+                      <p style="margin-top: 30px;">If you have any questions, please contact us at <a href="mailto:${process.env.SUPPORT_EMAIL || 'support@yourdomain.com'}\">${process.env.SUPPORT_EMAIL || 'support@yourdomain.com'}</a>.</p>
                       <p style="margin-top: 30px;">Best regards,<br>College Reclaim Team</p>
                     </div>
                   </div>
@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
                     ${phoneNumber ? `<li><strong>Phone:</strong> ${phoneNumber}</li>` : ''}
                   </ul>
 
-                  <p style="margin-top: 30px;">If you have any questions, please contact us at <a href="mailto:collegereclaimjc@gmail.com">collegereclaimjc@gmail.com</a>.</p>
+                  <p style="margin-top: 30px;">If you have any questions, please contact us at <a href="mailto:${process.env.SUPPORT_EMAIL || 'support@yourdomain.com'}">${process.env.SUPPORT_EMAIL || 'support@yourdomain.com'}</a>.</p>
                   <p style="margin-top: 30px;">Best regards,<br>College Reclaim Team</p>
                 </div>
               </div>
@@ -179,7 +179,7 @@ export async function POST(request: NextRequest) {
     // Send notification email to admin
     try {
       await sendEmail({
-        to: "collegereclaimjc@gmail.com",
+        to: process.env.SUPPORT_EMAIL || "support@yourdomain.com",
         subject: "New Coordinator Access Request",
         html: `
           <!DOCTYPE html>

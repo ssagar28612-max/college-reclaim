@@ -43,3 +43,15 @@ next-env.d.ts
 /src/generated/prisma
 
 .vercel
+
+# Documentation and reports (personal reference)
+*_SUMMARY.md
+*_DOCS.md
+*_GUIDE.md
+*_DEBUG.md
+*_REFERENCE.md
+*_FEATURE.md
+*_SETUP.md
+SECURITY_AUDIT_REPORT.md
+PROJECT_DOCUMENTATION.md
+COMMAND_REFERENCE.md

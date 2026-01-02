@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
 
     // Send email to admin
     await sendEmail({
-      to: "collegereclaimjc@gmail.com",
+      to: process.env.SUPPORT_EMAIL || "support@yourdomain.com",
       subject: `Support Request: ${subject}`,
       html: `
         <!DOCTYPE html>

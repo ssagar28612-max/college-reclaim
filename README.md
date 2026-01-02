@@ -94,24 +94,49 @@ npm install
 
 3. Set up environment variables
 
-Create a `.env` file in the root directory:
+Copy `.env.example` to `.env` and fill in your values:
+
+```bash
+cp .env.example .env
+```
+
+Required environment variables:
 
 ```env
-# Database
-DATABASE_URL="postgresql://user:password@localhost:5432/college_reclaim"
+# Database (PostgreSQL)
+DATABASE_URL="postgresql://username:password@host:port/database?sslmode=require"
 
-# NextAuth
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-secret-key-here"
+# NextAuth Configuration
+NEXTAUTH_URL="http://localhost:3000"  # Use production URL in production
+NEXTAUTH_SECRET="your-secure-random-secret"  # Generate: openssl rand -base64 32
 
-# Email Configuration (for OTP)
+# Google OAuth (Optional)
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+
+# Email Configuration (Gmail recommended)
 EMAIL_USER="your-email@gmail.com"
-EMAIL_PASSWORD="your-app-password"
-EMAIL_FROM="College ReClaim <noreply@collegereclaim.com>"
+EMAIL_PASS="your-gmail-app-password"  # Get from Google Account settings
 
-# Optional: File Upload
-BLOB_READ_WRITE_TOKEN="your-vercel-blob-token"
+# Support Email (displayed to users)
+SUPPORT_EMAIL="support@yourdomain.com"
+
+# Admin Setup (for scripts/set-admin.js)
+ADMIN_EMAIL="admin@yourdomain.com"
+ADMIN_PASSWORD="your-secure-admin-password"
+
+# Cron Job Authentication
+CRON_SECRET="your-secure-cron-secret"  # Generate: openssl rand -hex 32
+
+# Vercel Blob Storage (for image uploads)
+BLOB_READ_WRITE_TOKEN="vercel_blob_rw_your_token_here"
 ```
+
+**Security Notes:**
+- Never commit `.env` to version control (already in `.gitignore`)
+- Use strong, unique secrets for production
+- Rotate credentials if exposed
+- See `.env.example` for detailed configuration guide
 
 4. Set up the database
 ```bash
@@ -216,11 +241,21 @@ When reporting items, the location dropdown includes:
 
 ## Admin Setup
 
-To create an admin user, use the provided script:
+To create an admin user:
+
+1. Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in your `.env` file
+2. Run the setup script:
 
 ```bash
-node scripts/set-admin.js your-email@example.com
+node scripts/set-admin.js
 ```
+
+The script will:
+- Create a new admin user if one doesn't exist
+- Update existing user to admin role if found
+- Set the password from environment variables
+
+**Note:** Admin credentials are read from `.env` for security
 
 ## Database Schema
 
@@ -259,12 +294,16 @@ npx prisma migrate deploy
 
 ## Security Features
 
-- Password hashing with bcryptjs (10 rounds)
-- Email verification via OTP
-- Role-based API route protection
-- CSRF protection with NextAuth
-- Secure session management
-- Environment variable protection
+- **Password Hashing** - bcryptjs with 10 salt rounds
+- **Email Verification** - OTP-based account verification
+- **Role-Based Access Control** - Protected routes for users, coordinators, and admins
+- **CSRF Protection** - Built-in with NextAuth.js
+- **Secure Session Management** - Encrypted session tokens
+- **Environment Variables** - All sensitive data in .env (never committed)
+- **Credential Rotation** - Easy to rotate secrets without code changes
+- **API Authentication** - Protected endpoints with session validation
+- **Cron Job Security** - Bearer token authentication for scheduled tasks
+- **Input Validation** - Server-side validation on all API routes
 
 ## Browser Support
 

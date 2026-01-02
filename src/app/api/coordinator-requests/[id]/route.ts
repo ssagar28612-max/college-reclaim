@@ -244,7 +244,7 @@ export async function POST(
                   <p>Thank you for your interest in becoming a coordinator for College Reclaim.</p>
                   <p>After careful review, we are unable to approve your coordinator access request at this time.</p>
                   <p>If you believe this is an error or would like to discuss this further, please contact us at:</p>
-                  <p><strong>Email:</strong> collegereclaimjc@gmail.com</p>
+                  <p><strong>Email:</strong> ${process.env.SUPPORT_EMAIL || 'support@yourdomain.com'}</p>
                   <p style="margin-top: 30px;">Best regards,<br>College Reclaim Team</p>
                 </div>
               </div>

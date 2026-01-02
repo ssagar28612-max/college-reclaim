@@ -23,9 +23,9 @@ The College Reclaim application now has a comprehensive email notification syste
 
 ### Step 1: Access Admin Dashboard
 1. Go to `http://localhost:3000/auth/signin`
-2. Sign in with admin credentials:
-   - **Email**: collegereclaimjc@gmail.com
-   - **Password**: Enixboi21
+2. Sign in with your admin credentials (configured in .env file)
+   - **Email**: [Your admin email from .env]
+   - **Password**: [Your admin password]
 
 ### Step 2: Navigate to Notifications Tab
 1. Once logged in, you'll see the Admin Dashboard
